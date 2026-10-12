@@ -73,3 +73,4 @@ CommitType :: (#issue number) Subject
 - 검사 항목: 커밋 타입, ` :: ` 구분자, 비어 있지 않은 Subject, 50자 제한, 한국어 작성(`🚀` 제외), 명령형 어미
 - git이 자동으로 만드는 메시지(`Merge branch ...`, `Revert ...`)도 규칙에 맞게 고쳐서 커밋합니다. 예: `git merge develop -m "🔀 :: (#12) develop 변경 사항 반영"`
 - `fixup!`, `squash!`, `amend!` 커밋은 rebase 때 다른 커밋에 합쳐지므로 검사하지 않습니다.
+- PR 제목은 CI의 `PR title` 검사가 같은 규칙으로 확인하며, `🔀` 타입과 `(#이슈 번호)`가 반드시 있어야 합니다.

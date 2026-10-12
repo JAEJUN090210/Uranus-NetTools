@@ -4,6 +4,7 @@
 
 [English](README.md) | 한국어
 
+[![CI](https://github.com/JAEJUN090210/Uranus-NetTools/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/JAEJUN090210/Uranus-NetTools/actions/workflows/ci.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 
 Uranus-NetTools(`unt`)는 Windows, Linux, macOS에서 동작하는 커맨드라인 네트워크 도구 모음입니다. 자주 쓰는 진단, 스캔, 조회 도구를 하나의 일관된 인터페이스로 묶었습니다. 명령을 한 번씩 실행할 수도 있고, 대화형 셸에 들어가 이어서 입력할 수도 있습니다. TypeScript와 Node.js로 만듭니다.

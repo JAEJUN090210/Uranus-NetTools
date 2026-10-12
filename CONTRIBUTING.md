@@ -74,6 +74,10 @@ hotfix/31_scan-timeout
 - 본문에 `Closes #이슈 번호`를 적어 머지할 때 이슈가 자동으로 닫히게 합니다. 자동 종료는 기본 브랜치(`develop`)로 머지될 때만 동작하므로, hotfix는 머지 후 이슈를 직접 닫습니다.
 - feature 브랜치는 `develop`으로 PR을 보냅니다. hotfix 브랜치는 `main`으로 PR을 보내고, 같은 수정을 `develop`에도 반영합니다.
 - merge commit 방식으로 머지하고, merge commit 메시지도 PR 제목과 같은 형식으로 씁니다.
+- PR을 올리면 GitHub Actions가 아래 두 가지를 검사하며, 둘 다 통과해야 머지할 수 있습니다.
+  - `CI`: Windows, macOS, Linux × Node.js 22, 24, 26에서 타입 검사, 린트, 포맷 검사, 테스트, 빌드
+  - `PR title`: PR 제목 형식
+- 머지된 브랜치는 GitHub에서 자동으로 삭제됩니다.
 
 ## 템플릿
 

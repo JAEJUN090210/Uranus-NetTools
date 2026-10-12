@@ -1,0 +1,28 @@
+name: PR title
+
+on:
+  pull_request:
+    branches: [develop, main]
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+env:
+  HUSKY: 0
+
+jobs:
+  pr-title:
+    name: PR title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Check the title against COMMIT_CONVENTION.md
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: node --import tsx scripts/check-convention.ts --pr-title "$PR_TITLE"
