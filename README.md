@@ -121,6 +121,25 @@ $ unt whois example.com --raw            # the server's original response
 | `-W, --timeout <ms>` | Time to wait for each server (default: 10000) |
 | `--raw` | Print the server's original response |
 
+### ip
+
+Shows which network an IP address belongs to: its host name (reverse DNS), the AS number and BGP prefix that announce it (from [Team Cymru](https://www.team-cymru.com/ip-asn-mapping)), and the registered owner and abuse contact (RDAP). Give it a domain to see every IPv4 and IPv6 address of that domain in a table. It does not look up locations.
+
+```console
+$ unt ip 8.8.8.8          # details of one address
+$ unt ip google.com       # every address of a domain
+$ unt ip google.com -6    # only the IPv6 addresses
+```
+
+| Option | Description |
+| --- | --- |
+| `-W, --timeout <ms>` | Time to wait for each lookup (default: 10000) |
+| `-4, --ipv4` / `-6, --ipv6` | Use only the IPv4 or IPv6 addresses of a domain |
+
+Private and reserved addresses are never sent to outside services. If one of the lookups fails, the others are still shown with a warning and the exit code is 1.
+
+Host names and AS numbers are looked up through the system's DNS servers. When those cannot be reached directly (this happens with some VPNs on Windows), the lookups go through public resolvers (8.8.8.8, 1.1.1.1) instead, and private addresses are shown without host names.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
