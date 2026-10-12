@@ -48,6 +48,20 @@ unt> exit
 | macOS | Homebrew | 예정 |
 | Windows | winget | 예정 |
 
+## 소스에서 빌드하기
+
+첫 릴리즈 전까지는 소스를 직접 빌드해 실행할 수 있습니다. Node.js 22.13 이상이 필요합니다.
+
+```console
+$ git clone https://github.com/JAEJUN090210/Uranus-NetTools.git
+$ cd Uranus-NetTools
+$ npm install
+$ npm run build
+$ node dist/unt.cjs --help
+```
+
+빌드 후 `npm link`를 실행하면 어디서나 `unt` 명령을 쓸 수 있습니다.
+
 ## 책임 있는 사용
 
 스캔과 탐지 도구를 내가 관리하지 않는 시스템에 사용하면 네트워크 장애를 일으키거나 법과 정책을 위반할 수 있습니다. 직접 소유했거나 명시적으로 허가받은 호스트와 네트워크에만 사용하세요.

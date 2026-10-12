@@ -48,6 +48,20 @@ Uranus-NetTools will be available through the following package managers.
 | macOS | Homebrew | Planned |
 | Windows | winget | Planned |
 
+## Building from source
+
+Until the first release, you can build and run Uranus-NetTools from source. Node.js 22.13 or later is required.
+
+```console
+$ git clone https://github.com/JAEJUN090210/Uranus-NetTools.git
+$ cd Uranus-NetTools
+$ npm install
+$ npm run build
+$ node dist/unt.cjs --help
+```
+
+Run `npm link` after building to use the `unt` command from anywhere.
+
 ## Responsible use
 
 Scanning and probing tools can disrupt networks and may violate laws or policies when used against systems you do not control. Only scan hosts and networks you own or have explicit permission to test.
