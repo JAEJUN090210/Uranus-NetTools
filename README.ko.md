@@ -59,6 +59,32 @@ unt ❯ exit
 - `help [명령]`은 도움말, `clear`는 화면 지우기, `exit`이나 `quit`은 셸 종료입니다.
 - `Ctrl+C`는 셸을 끝내지 않고 실행 중인 명령만 취소합니다. 빈 줄에서 두 번 누르거나 `Ctrl+D`를 누르면 종료합니다.
 
+## 명령
+
+### ping
+
+호스트가 응답하는지, 얼마나 빠른지 확인합니다. ICMP는 시스템 `ping` 명령을 쓰므로 관리자 권한이 필요 없습니다. ICMP가 막힌 곳에서는 `--tcp`로 TCP 연결 시간을 대신 잽니다.
+
+```console
+$ unt ping google.com                    # 4번 전송
+$ unt ping google.com -t                 # Ctrl+C까지 계속
+$ unt ping example.com --tcp             # TCP 443 포트
+$ unt ping example.com -p 22             # TCP 22 포트
+$ unt ping google.com 1.1.1.1 8.8.8.8    # 여러 호스트를 표로 비교
+```
+
+| 옵션 | 설명 |
+| --- | --- |
+| `-c, --count <n>` | 호스트마다 보낼 횟수 (기본값: 4) |
+| `-t, --continuous` | Ctrl+C를 누를 때까지 계속 전송 |
+| `-i, --interval <seconds>` | 전송 간격(초) (기본값: 1) |
+| `-W, --timeout <ms>` | 응답을 기다리는 시간 (기본값: 2000) |
+| `--tcp` | ICMP 대신 TCP 연결 시간을 측정 |
+| `-p, --port <port>` | TCP 포트, `--tcp` 포함 (기본값: 443) |
+| `-4, --ipv4` / `-6, --ipv6` | IPv4 또는 IPv6만 사용 |
+
+요약에는 손실률, 최소/평균/최대, 지터, p95, 응답 시간 스파크라인이 나옵니다. 응답을 하나도 받지 못한 호스트가 있으면 종료 코드는 1입니다.
+
 ## 설치
 
 아래 패키지 매니저로 배포할 예정입니다.

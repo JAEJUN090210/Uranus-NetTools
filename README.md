@@ -59,6 +59,32 @@ Run `unt` without arguments to open an interactive shell. Every command works th
 - `help [command]` shows help, `clear` clears the screen, and `exit` or `quit` leaves the shell.
 - `Ctrl+C` cancels the running command without leaving the shell. Press it twice on an empty line, or press `Ctrl+D`, to quit.
 
+## Commands
+
+### ping
+
+Checks whether hosts respond and how fast. ICMP uses the system `ping` command, so no admin rights are needed. Where ICMP is blocked, `--tcp` measures the TCP handshake time instead.
+
+```console
+$ unt ping google.com                    # 4 probes
+$ unt ping google.com -t                 # until Ctrl+C
+$ unt ping example.com --tcp             # TCP port 443
+$ unt ping example.com -p 22             # TCP port 22
+$ unt ping google.com 1.1.1.1 8.8.8.8    # compare hosts in a table
+```
+
+| Option | Description |
+| --- | --- |
+| `-c, --count <n>` | Probes per host (default: 4) |
+| `-t, --continuous` | Keep pinging until Ctrl+C |
+| `-i, --interval <seconds>` | Seconds between probes (default: 1) |
+| `-W, --timeout <ms>` | Time to wait for each reply (default: 2000) |
+| `--tcp` | Measure the TCP handshake time instead of ICMP |
+| `-p, --port <port>` | TCP port, implies `--tcp` (default: 443) |
+| `-4, --ipv4` / `-6, --ipv6` | Use IPv4 or IPv6 only |
+
+The summary shows loss, min/avg/max, jitter, p95 and a sparkline of the response times. The exit code is 1 when a host gets no reply at all.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
