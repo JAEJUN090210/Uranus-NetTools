@@ -2,6 +2,22 @@
 
 Uranus-NetTools에 관심을 가져주셔서 감사합니다. 이 문서는 이슈 생성부터 PR 머지까지의 작업 규칙을 설명합니다. 커밋 메시지는 [COMMIT_CONVENTION.md](COMMIT_CONVENTION.md)의 규칙을 따릅니다.
 
+## 개발 환경
+
+Node.js 22.13 이상과 npm이 필요합니다. 저장소를 받은 뒤 `npm install`로 의존성을 설치합니다.
+
+| 명령 | 설명 |
+| --- | --- |
+| `npm run dev -- <인자>` | 빌드 없이 소스를 바로 실행합니다. 예: `npm run dev -- --help` |
+| `npm run build` | `dist/unt.cjs` 하나로 번들링합니다. |
+| `npm run typecheck` | TypeScript 타입을 검사합니다. |
+| `npm run lint` | ESLint로 코드를 검사합니다. |
+| `npm run format` | Prettier로 코드를 정리합니다. |
+| `npm test` | Vitest로 테스트를 실행합니다. |
+| `npm run check` | 타입 검사, 린트, 포맷 검사, 테스트를 한 번에 실행합니다. |
+
+PR을 올리기 전에 `npm run check`가 통과하는지 확인해 주세요.
+
 ## 개발 프로세스
 
 1. 이슈를 생성합니다.
