@@ -39,6 +39,18 @@ unt> ping 8.8.8.8
 unt> exit
 ```
 
+### Global options
+
+| Option | Description |
+| --- | --- |
+| `--json` | Print results as JSON for scripts |
+| `-q, --quiet` | Print results only, without hints |
+| `--verbose` | Print details such as the system commands being run |
+| `-V, --version` | Print the version |
+| `-h, --help` | Show help |
+
+Colors turn off automatically when the output is not a terminal or the `NO_COLOR` environment variable is set.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
