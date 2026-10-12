@@ -104,6 +104,23 @@ $ unt trace 1.1.1.1 -m 15       # stop after 15 hops
 
 Each hop is printed as soon as it finishes. The exit code is 1 when the host is not reached.
 
+### whois
+
+Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.
+
+```console
+$ unt whois google.com                   # registrar, dates, status, name servers
+$ unt whois https://www.naver.co.kr/     # URLs and subdomains work too
+$ unt whois 8.8.8.8                      # network owner and abuse contact
+$ unt whois AS15169                      # owner of an AS number
+$ unt whois example.com --raw            # the server's original response
+```
+
+| Option | Description |
+| --- | --- |
+| `-W, --timeout <ms>` | Time to wait for each server (default: 10000) |
+| `--raw` | Print the server's original response |
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.

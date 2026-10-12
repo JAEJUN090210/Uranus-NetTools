@@ -1,5 +1,6 @@
 import type { Runtime } from '../cli/runtime';
 import { type Colors, createColors, shouldUseColor } from './colors';
+import { type Field, renderFields } from './fields';
 import { getSymbols, supportsUnicode, type Symbols } from './symbols';
 import { type Column, renderTable } from './table';
 
@@ -62,6 +63,14 @@ export class Output {
 
   table<Row>(rows: readonly Row[], columns: readonly Column<Row>[]): void {
     this.line(renderTable(rows, columns, this.colors));
+  }
+
+  /** 이름과 값을 두 열로 맞춘 목록을 출력합니다. */
+  fields(fields: readonly Field[]): void {
+    const text = renderFields(fields, this.colors);
+    if (text !== '') {
+      this.line(text);
+    }
   }
 
   /** 안내 문구입니다. --quiet이면 출력하지 않습니다. */
