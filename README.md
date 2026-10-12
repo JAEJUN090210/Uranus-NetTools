@@ -140,6 +140,22 @@ Private and reserved addresses are never sent to outside services. If one of the
 
 Host names and AS numbers are looked up through the system's DNS servers. When those cannot be reached directly (this happens with some VPNs on Windows), the lookups go through public resolvers (8.8.8.8, 1.1.1.1) instead, and private addresses are shown without host names.
 
+### geoip
+
+Shows the approximate location of an IP address: country, region, city, coordinates with an OpenStreetMap link, time zone, network and whether it is a known proxy or VPN. Give it a domain to see every address of that domain in a table.
+
+```console
+$ unt geoip 8.8.8.8
+$ unt geoip google.com
+```
+
+| Option | Description |
+| --- | --- |
+| `-W, --timeout <ms>` | Time to wait for each lookup (default: 10000) |
+| `-4, --ipv4` / `-6, --ipv6` | Use only the IPv4 or IPv6 addresses of a domain |
+
+Locations come from [FreeIPAPI](https://freeipapi.com), with [GeoJS](https://www.geojs.io) as a fallback. Both are free, need no API key and allow commercial use. To look up an address, `geoip` sends it to these services; private and reserved addresses are never sent. Locations are estimates and can differ between services.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
