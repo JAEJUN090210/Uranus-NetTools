@@ -85,6 +85,25 @@ $ unt ping google.com 1.1.1.1 8.8.8.8    # compare hosts in a table
 
 The summary shows loss, min/avg/max, jitter, p95 and a sparkline of the response times. The exit code is 1 when a host gets no reply at all.
 
+### trace
+
+Shows each router on the way to a host and how long it takes to reply. It runs the system `tracert` (Windows) or `traceroute` (macOS, Linux), and falls back to `tracepath` on Linux distributions without traceroute.
+
+```console
+$ unt trace google.com          # with host names
+$ unt trace google.com -n       # IP addresses only, faster
+$ unt trace 1.1.1.1 -m 15       # stop after 15 hops
+```
+
+| Option | Description |
+| --- | --- |
+| `-m, --max-hops <n>` | Maximum number of hops (default: 30) |
+| `-W, --timeout <ms>` | Time to wait for each reply (default: 2000) |
+| `-n, --numeric` | Show IP addresses only, without looking up host names |
+| `-4, --ipv4` / `-6, --ipv6` | Use IPv4 or IPv6 only |
+
+Each hop is printed as soon as it finishes. The exit code is 1 when the host is not reached.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
