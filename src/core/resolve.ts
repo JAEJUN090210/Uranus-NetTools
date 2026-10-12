@@ -24,8 +24,32 @@ export async function resolveHost(host: string, family: 0 | IpFamily = 0): Promi
     const result = await lookup(host, { family });
     return { host, address: result.address, family: result.family === 6 ? 6 : 4 };
   } catch {
-    throw new UserError(
-      `cannot resolve ${host}${family === 0 ? '' : ` to an IPv${family} address`}`,
-    );
+    throw cannotResolve(host, family);
   }
+}
+
+/** 호스트 이름의 모든 IP 주소를 IPv4, IPv6 순서로 돌려줍니다. */
+export async function resolveAllAddresses(
+  host: string,
+  family: 0 | IpFamily = 0,
+): Promise<{ address: string; family: IpFamily }[]> {
+  let results: { address: string; family: number }[];
+  try {
+    results = await lookup(host, { all: true, family });
+  } catch {
+    throw cannotResolve(host, family);
+  }
+  const unique = new Map<string, IpFamily>();
+  for (const result of results) {
+    unique.set(result.address, result.family === 6 ? 6 : 4);
+  }
+  return [...unique]
+    .map(([address, addressFamily]) => ({ address, family: addressFamily }))
+    .sort((a, b) => a.family - b.family);
+}
+
+function cannotResolve(host: string, family: 0 | IpFamily): UserError {
+  return new UserError(
+    `cannot resolve ${host}${family === 0 ? '' : ` to an IPv${family} address`}`,
+  );
 }
