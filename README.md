@@ -35,8 +35,8 @@ $ unt dns example.com --type MX
 $ unt local
 
 $ unt
-unt> ping 8.8.8.8
-unt> exit
+unt ❯ ping 8.8.8.8
+unt ❯ exit
 ```
 
 ### Global options
@@ -50,6 +50,14 @@ unt> exit
 | `-h, --help` | Show help |
 
 Colors turn off automatically when the output is not a terminal or the `NO_COLOR` environment variable is set.
+
+### Interactive shell
+
+Run `unt` without arguments to open an interactive shell. Every command works the same way as on the command line.
+
+- `Tab` completes command names and options.
+- `help [command]` shows help, `clear` clears the screen, and `exit` or `quit` leaves the shell.
+- `Ctrl+C` cancels the running command without leaving the shell. Press it twice on an empty line, or press `Ctrl+D`, to quit.
 
 ## Installation
 
