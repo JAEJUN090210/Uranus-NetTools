@@ -1,0 +1,102 @@
+/** 실제 WHOIS 서버 응답을 줄인 예시입니다. */
+
+export const gtldWhois = [
+  'Domain Name: EXAMPLE.ORG',
+  'Registry Domain ID: 4c2e7d4e1f8a4c3b-LROR',
+  'Registrar WHOIS Server: whois.iana.org',
+  'Registrar URL: http://res-dom.iana.org',
+  'Updated Date: 2024-01-22T07:59:12Z',
+  'Creation Date: 1995-04-30T04:00:00Z',
+  'Registry Expiry Date: 2025-04-29T04:00:00Z',
+  'Registrar: Internet Assigned Numbers Authority',
+  'Registrar IANA ID: 376',
+  'Domain Status: clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited',
+  'Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited',
+  'Registrant Organization: Internet Assigned Numbers Authority',
+  'Name Server: A.IANA-SERVERS.NET',
+  'Name Server: B.IANA-SERVERS.NET',
+  'DNSSEC: signedDelegation',
+  '',
+].join('\r\n');
+
+/** .kr은 한글 항목이 먼저 오고 영어 항목이 뒤따릅니다. */
+export const krWhois = [
+  'query : naver.co.kr',
+  '',
+  '# KOREAN(UTF8)',
+  '',
+  '도메인이름                  : naver.co.kr',
+  '등록인                      : 네이버(주)',
+  '등록일                      : 1997. 09. 12.',
+  '최근 정보 변경일            : 2024. 08. 21.',
+  '사용 종료일                 : 2033. 09. 12.',
+  '등록대행자                  : (주)메가존(http://HOSTING.KR)',
+  'DNSSEC                      : 미서명',
+  '',
+  '1차 네임서버 정보',
+  '   호스트이름               : ns1.naver.com',
+  '',
+  '# ENGLISH',
+  '',
+  'Domain Name                 : naver.co.kr',
+  'Registrant                  : NAVER Corp.',
+  'Registered Date             : 1997. 09. 12.',
+  'Last Updated Date           : 2024. 08. 21.',
+  'Expiration Date             : 2033. 09. 12.',
+  'Authorized Agency           : Megazone(http://HOSTING.KR)',
+  'DNSSEC                      : unsigned',
+  '',
+  'Primary Name Server',
+  '   Host Name                : ns1.naver.com',
+  '',
+  'Secondary Name Server',
+  '   Host Name                : ns2.naver.com',
+  '',
+].join('\n');
+
+/** JPRS(.jp)는 질의 끝에 /e를 붙이면 영어 항목 이름을 대괄호로 감싸서 보여줍니다. */
+export const jprsWhois = [
+  '[ JPRS database provides information on network administration. Its use is    ]',
+  'Domain Information:',
+  '[Domain Name]                   JPRS.JP',
+  '',
+  '[Registrant]                    Japan Registry Services Co.,Ltd.',
+  '',
+  '[Name Server]                   ns1.jprs.jp',
+  '[Name Server]                   ns2.jprs.jp',
+  '[Signing Key]                   7240 8 2 (',
+  '                                E147A85589E24FE0DBB5980C73501B5D )',
+  '',
+  '[Created on]                    2001/02/02',
+  '[Expires on]                    2027/02/28',
+  '[Status]                        Active',
+  '[Lock Status]                   DomainTransferLocked',
+  '[Last Updated]                  2026/03/01 01:05:03 (JST)',
+  '',
+].join('\n');
+
+/** DENIC(.de)은 -T dn으로 물으면 네임서버와 변경일까지 알려줍니다. */
+export const denicWhois = [
+  '% Restricted rights.',
+  '',
+  'Domain: denic.de',
+  'Nserver: ns1.denic.de 77.67.63.106 2001:668:1f:11:0:0:0:106',
+  'Nserver: ns4.denic.net',
+  'Dnskey: 257 3 8 AwEAAb/xrM2MD+xm84YNYby6TxkMaC6PtzF2bB9WBB7ux7iqzhViob4GKvQ6L7CkXjyAx==',
+  'Status: connect',
+  'Changed: 2024-12-19T13:33:43+01:00',
+  '',
+].join('\n');
+
+export const ianaKr = [
+  '% IANA WHOIS server',
+  '% for more information on IANA, visit http://www.iana.org',
+  '',
+  'domain:       KR',
+  '',
+  'organisation: Korea Internet & Security Agency (KISA)',
+  'whois:        whois.kr',
+  '',
+  'status:       ACTIVE',
+  '',
+].join('\n');
