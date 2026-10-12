@@ -14,6 +14,8 @@ export class Output {
   readonly json: boolean;
   readonly quiet: boolean;
   readonly verbose: boolean;
+  /** 유니코드 기호를 그릴 수 있는 터미널인지 여부입니다. */
+  readonly unicode: boolean;
   readonly symbols: Symbols;
   readonly colors: Colors;
   private readonly errorColors: Colors;
@@ -25,7 +27,8 @@ export class Output {
     this.json = options.json ?? false;
     this.quiet = options.quiet ?? false;
     this.verbose = options.verbose ?? false;
-    this.symbols = getSymbols(supportsUnicode(runtime.env, runtime.platform));
+    this.unicode = supportsUnicode(runtime.env, runtime.platform);
+    this.symbols = getSymbols(this.unicode);
     this.colors = createColors(!this.json && shouldUseColor(runtime.stdout, runtime.env));
     this.errorColors = createColors(shouldUseColor(runtime.stderr, runtime.env));
   }
