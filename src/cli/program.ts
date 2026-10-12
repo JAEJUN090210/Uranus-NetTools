@@ -3,6 +3,7 @@ import { Command, Option } from 'commander';
 import pkg from '../../package.json' with { type: 'json' };
 import { createPingCommand } from '../commands/ping';
 import { createTraceCommand } from '../commands/trace';
+import { createWhoisCommand } from '../commands/whois';
 import { createColors, shouldUseColor } from '../ui/colors';
 import type { Runtime } from './runtime';
 
@@ -17,7 +18,7 @@ export interface CommandGroup {
 export const COMMAND_GROUPS: readonly CommandGroup[] = [
   { heading: 'Diagnostics:', commands: [createPingCommand, createTraceCommand] },
   { heading: 'Scanning:', commands: [] },
-  { heading: 'Lookup:', commands: [] },
+  { heading: 'Lookup:', commands: [createWhoisCommand] },
   { heading: 'Local:', commands: [] },
 ];
 
