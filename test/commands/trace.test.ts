@@ -24,10 +24,11 @@ describe('unt trace', () => {
 
     const code = await runCommand(['trace', '127.0.0.1', '-n', '-m', '3', '-W', '1000'], runtime);
 
+    // 실제 환경 변수를 쓰므로 콘솔에 따라 ✔ 대신 [OK]가 나올 수 있어 기호는 확인하지 않습니다.
     expect(code).toBe(0);
-    expect(stdout()).toContain('✔ 127.0.0.1, max 3 hops');
+    expect(stdout()).toContain(' 127.0.0.1, max 3 hops');
     expect(stdout()).toMatch(/ {3}1\s+[\d.]+ ms.*127\.0\.0\.1/);
-    expect(stdout()).toContain('▸ reached in 1 hop');
+    expect(stdout()).toContain(' reached in 1 hop');
   });
 
   it('prints a JSON report', { timeout: 30_000 }, async () => {
