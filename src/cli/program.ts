@@ -2,6 +2,7 @@ import { Command, Option } from 'commander';
 
 import pkg from '../../package.json' with { type: 'json' };
 import { createPingCommand } from '../commands/ping';
+import { createTraceCommand } from '../commands/trace';
 import { createColors, shouldUseColor } from '../ui/colors';
 import type { Runtime } from './runtime';
 
@@ -14,7 +15,7 @@ export interface CommandGroup {
 
 /** 도움말에 보여줄 명령 분류입니다. 새 명령은 알맞은 분류의 commands에 추가합니다. */
 export const COMMAND_GROUPS: readonly CommandGroup[] = [
-  { heading: 'Diagnostics:', commands: [createPingCommand] },
+  { heading: 'Diagnostics:', commands: [createPingCommand, createTraceCommand] },
   { heading: 'Scanning:', commands: [] },
   { heading: 'Lookup:', commands: [] },
   { heading: 'Local:', commands: [] },
