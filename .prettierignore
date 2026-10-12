@@ -1,0 +1,5 @@
+dist
+coverage
+package-lock.json
+# 문서는 직접 정렬한 표 형식을 유지하기 위해 포맷하지 않습니다.
+*.md
