@@ -1,3 +1,5 @@
+import { isIP } from 'node:net';
+
 import { InvalidArgumentError } from 'commander';
 
 import { parsePortList } from '../core/scan/ports';
@@ -33,4 +35,12 @@ export function parsePorts(value: string): number[] {
   } catch (error) {
     throw new InvalidArgumentError(error instanceof Error ? error.message : String(error));
   }
+}
+
+/** IP 주소만 받습니다. 서버 주소를 이름으로 주면 그 이름을 풀기 위해 또 DNS가 필요해지기 때문입니다. */
+export function parseIpAddress(value: string): string {
+  if (isIP(value) === 0) {
+    throw new InvalidArgumentError('must be an IP address.');
+  }
+  return value;
 }
