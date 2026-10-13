@@ -138,9 +138,10 @@ export interface FakeDnsServer {
  */
 export async function listenFakeDns(zone: FakeZone): Promise<FakeDnsServer> {
   // UDP와 TCP가 같은 번호를 써야 하는데, Windows에는 예약돼 있어 쓸 수 없는 포트 범위가 있습니다.
-  // 그런 번호를 골랐으면 두 번째 bind가 EACCES로 실패하므로, 다른 번호로 몇 번 더 시도합니다.
+  // 그래서 운영체제가 직접 고르게 한 TCP 포트부터 잡고, 그 번호로 UDP를 엽니다.
+  // UDP 쪽 예약 범위에 걸리면 다른 번호로 다시 시도합니다.
   let lastError: unknown;
-  for (let attempt = 0; attempt < 10; attempt++) {
+  for (let attempt = 0; attempt < 25; attempt++) {
     try {
       return await bindBoth(zone);
     } catch (error) {
@@ -192,8 +193,8 @@ async function bindBoth(zone: FakeZone): Promise<FakeDnsServer> {
   };
 
   try {
-    const port = await listenUdp(udp);
-    await listenTcp(tcp, port);
+    const port = await listenTcp(tcp);
+    await bindUdp(udp, port);
     return { address: '127.0.0.1', port, close: closeBoth };
   } catch (error) {
     await closeBoth();
@@ -201,21 +202,27 @@ async function bindBoth(zone: FakeZone): Promise<FakeDnsServer> {
   }
 }
 
-function listenUdp(udp: UdpSocket): Promise<number> {
+/** 포트를 0으로 주면 운영체제가 실제로 쓸 수 있는 번호를 골라 줍니다. */
+function listenTcp(tcp: Server): Promise<number> {
   return new Promise((resolve, reject) => {
-    udp.once('error', reject);
-    udp.bind(0, '127.0.0.1', () => {
-      udp.removeListener('error', reject);
-      resolve(udp.address().port);
+    tcp.once('error', reject);
+    tcp.listen(0, '127.0.0.1', () => {
+      tcp.removeListener('error', reject);
+      const address = tcp.address();
+      if (address === null || typeof address === 'string') {
+        reject(new Error('the fake DNS server has no port'));
+        return;
+      }
+      resolve(address.port);
     });
   });
 }
 
-function listenTcp(tcp: Server, port: number): Promise<void> {
+function bindUdp(udp: UdpSocket, port: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    tcp.once('error', reject);
-    tcp.listen(port, '127.0.0.1', () => {
-      tcp.removeListener('error', reject);
+    udp.once('error', reject);
+    udp.bind(port, '127.0.0.1', () => {
+      udp.removeListener('error', reject);
       resolve();
     });
   });
