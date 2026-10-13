@@ -2,6 +2,7 @@ import { Command, Option } from 'commander';
 
 import pkg from '../../package.json' with { type: 'json' };
 import { createGeoipCommand } from '../commands/geoip';
+import { createInfoCommand } from '../commands/info';
 import { createIpCommand } from '../commands/ip';
 import { createPingCommand } from '../commands/ping';
 import { createTraceCommand } from '../commands/trace';
@@ -20,7 +21,10 @@ export interface CommandGroup {
 export const COMMAND_GROUPS: readonly CommandGroup[] = [
   { heading: 'Diagnostics:', commands: [createPingCommand, createTraceCommand] },
   { heading: 'Scanning:', commands: [] },
-  { heading: 'Lookup:', commands: [createWhoisCommand, createIpCommand, createGeoipCommand] },
+  {
+    heading: 'Lookup:',
+    commands: [createWhoisCommand, createIpCommand, createGeoipCommand, createInfoCommand],
+  },
   { heading: 'Local:', commands: [] },
 ];
 
