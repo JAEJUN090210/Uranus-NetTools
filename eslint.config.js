@@ -5,7 +5,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['dist/', 'coverage/']),
+  // 생성된 OUI 데이터는 base64 한 줄이라 린트할 내용이 없습니다.
+  globalIgnores(['dist/', 'coverage/', 'src/core/sweep/oui-data.ts']),
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
