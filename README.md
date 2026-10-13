@@ -10,7 +10,7 @@ English | [한국어](README.ko.md)
 Uranus-NetTools (`unt`) is a cross-platform command-line network toolkit. It bundles everyday diagnostic, scanning, and lookup tools behind one consistent interface: run a single command, or drop into an interactive shell. Built with TypeScript on Node.js.
 
 > [!NOTE]
-> Uranus-NetTools is in early development and has not been released yet. The commands and options below may change before the first release (v1.0.0).
+> Version 1.0.0 is out. Builds for the package managers below are not published yet, so for now install it by [building from source](#building-from-source).
 
 ## Features
 
@@ -381,17 +381,17 @@ The process number is always shown. `--names` turns it into a program name as we
 
 ## Installation
 
-Uranus-NetTools will be available through the following package managers.
+Uranus-NetTools will be available through the following package managers. None of them is published yet; until then, [build from source](#building-from-source).
 
 | Platform | Package manager | Status |
 | --- | --- | --- |
-| Ubuntu | apt | Planned |
-| macOS | Homebrew | Planned |
-| Windows | winget | Planned |
+| Ubuntu | apt | Not published yet |
+| macOS | Homebrew | Not published yet |
+| Windows | winget | Not published yet |
 
 ## Building from source
 
-Until the first release, you can build and run Uranus-NetTools from source. Node.js 22.13 or later is required.
+Until the packages are published, this is how to install Uranus-NetTools. Node.js 22.13 or later is required.
 
 ```console
 $ git clone https://github.com/JAEJUN090210/Uranus-NetTools.git
