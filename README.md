@@ -138,7 +138,7 @@ $ unt ip google.com -6    # only the IPv6 addresses
 
 Private and reserved addresses are never sent to outside services. If one of the lookups fails, the others are still shown with a warning and the exit code is 1.
 
-Host names and AS numbers are looked up through the system's DNS servers. When those cannot be reached directly (this happens with some VPNs on Windows), the lookups go through public resolvers (8.8.8.8, 1.1.1.1) instead, and private addresses are shown without host names.
+Host names and AS numbers are looked up through the system's DNS servers. When those cannot be reached directly (this happens with some VPNs on Windows), the lookups go over HTTPS to public DNS-over-HTTPS resolvers (dns.google, then cloudflare-dns.com) instead, and private addresses are shown without host names.
 
 ### geoip
 
