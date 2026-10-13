@@ -1,6 +1,7 @@
 import { Command, Option } from 'commander';
 
 import pkg from '../../package.json' with { type: 'json' };
+import { createCertCommand } from '../commands/cert';
 import { createDnsCommand } from '../commands/dns';
 import { createGeoipCommand } from '../commands/geoip';
 import { createHttpCommand } from '../commands/http';
@@ -34,6 +35,7 @@ export const COMMAND_GROUPS: readonly CommandGroup[] = [
       createGeoipCommand,
       createInfoCommand,
       createHttpCommand,
+      createCertCommand,
     ],
   },
   { heading: 'Local:', commands: [] },

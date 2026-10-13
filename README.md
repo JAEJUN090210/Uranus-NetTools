@@ -226,6 +226,35 @@ Redirects are followed to the end and every hop is printed with its status and t
 
 The security header check looks for `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`, and explains what each missing one would do. A `frame-ancestors` rule in the CSP counts in place of `X-Frame-Options`. Missing headers are reported but do not change the exit code.
 
+### cert
+
+Shows the TLS certificate a server sends: who it was issued to and by, when it expires, which names it covers, whether it is valid for the host you asked about, and whether your system trusts it. Expired and self-signed certificates are shown with the reason rather than refused, so you can see what is wrong.
+
+```console
+$ unt cert example.com                      # the server certificate
+$ unt cert example.com --chain              # the intermediate and root ones too
+$ unt cert example.com:8443                 # another port
+$ unt cert mail.example.com --starttls smtp # a mail server that starts in plain text
+$ unt cert example.com --pem                # the certificate itself
+```
+
+| Option | Description |
+| --- | --- |
+| `-p, --port <port>` | Port to connect to (default: 443) |
+| `--starttls <protocol>` | Upgrade a plain connection first (`smtp`, `imap`, `pop3`, `ftp`) |
+| `--chain` | Show the intermediate and root certificates too |
+| `--pem` | Print the certificate in PEM form |
+| `--expiry-days <days>` | Warn when fewer days than this are left (default: 30) |
+| `-W, --timeout <ms>` | Time to wait for the server (default: 10000) |
+
+By default only the server's own certificate is shown; `--chain` adds the intermediate and root certificates with their own expiry dates, which is how you catch an intermediate that is about to lapse.
+
+A certificate with 30 days or fewer left is reported as a warning but still succeeds, so a daily check stays quiet until it matters. The exit code is 1 only once the certificate has actually expired. Use `--expiry-days` to move the warning threshold.
+
+The name check compares the host you asked about against the certificate's subject alternative names, including wildcards (`*.example.com` covers `www.example.com` but not `a.b.example.com`). Trust is reported separately, using your operating system's certificate authorities, with the reason when it fails.
+
+With `--starttls`, the connection starts in plain text and is upgraded the way the protocol requires, which is how mail and FTP servers usually work. The port then defaults to the usual one for that protocol: 587 for SMTP, 143 for IMAP, 110 for POP3 and 21 for FTP.
+
 ### whois
 
 Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.
