@@ -5,6 +5,7 @@ import { createGeoipCommand } from '../commands/geoip';
 import { createInfoCommand } from '../commands/info';
 import { createIpCommand } from '../commands/ip';
 import { createPingCommand } from '../commands/ping';
+import { createScanCommand } from '../commands/scan';
 import { createTraceCommand } from '../commands/trace';
 import { createWhoisCommand } from '../commands/whois';
 import { createColors, shouldUseColor } from '../ui/colors';
@@ -20,7 +21,7 @@ export interface CommandGroup {
 /** 도움말에 보여줄 명령 분류입니다. 새 명령은 알맞은 분류의 commands에 추가합니다. */
 export const COMMAND_GROUPS: readonly CommandGroup[] = [
   { heading: 'Diagnostics:', commands: [createPingCommand, createTraceCommand] },
-  { heading: 'Scanning:', commands: [] },
+  { heading: 'Scanning:', commands: [createScanCommand] },
   {
     heading: 'Lookup:',
     commands: [createWhoisCommand, createIpCommand, createGeoipCommand, createInfoCommand],
