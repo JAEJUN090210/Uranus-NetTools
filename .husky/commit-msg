@@ -1,0 +1,1 @@
+node --import tsx scripts/check-convention.ts --file "$1"

@@ -1,0 +1,8 @@
+dist
+coverage
+package-lock.json
+# 문서는 직접 정렬한 표 형식을 유지하기 위해 포맷하지 않습니다.
+*.md
+
+# 생성된 OUI 데이터는 base64 한 줄이라 포맷하지 않습니다.
+src/core/sweep/oui-data.ts

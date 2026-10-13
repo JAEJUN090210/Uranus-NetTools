@@ -1,0 +1,61 @@
+{
+  "name": "uranus-nettools",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CLI-based Network Toolkit Powered by Uranus",
+  "keywords": [
+    "network",
+    "cli",
+    "ping",
+    "traceroute",
+    "port-scanner",
+    "dns",
+    "whois"
+  ],
+  "homepage": "https://github.com/JAEJUN090210/Uranus-NetTools#readme",
+  "bugs": {
+    "url": "https://github.com/JAEJUN090210/Uranus-NetTools/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JAEJUN090210/Uranus-NetTools.git"
+  },
+  "license": "GPL-3.0-or-later",
+  "author": "JAEJUN JEON",
+  "type": "module",
+  "bin": {
+    "unt": "dist/unt.cjs"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsx scripts/build.ts",
+    "typecheck": "tsc",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "commander": "^15.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3"
+  }
+}
