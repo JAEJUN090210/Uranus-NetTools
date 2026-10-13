@@ -19,6 +19,7 @@ function createShell({ terminal = false } = {}) {
   });
 
   const waiting = Promise.withResolvers<undefined>();
+  const asking = Promise.withResolvers<undefined>();
   const groups: readonly CommandGroup[] = [
     {
       heading: 'Testing:',
@@ -35,6 +36,12 @@ function createShell({ terminal = false } = {}) {
             });
             new Output(runtime).summary('stopped');
           }),
+        (runtime) =>
+          new Command('ask').action(async () => {
+            asking.resolve(undefined);
+            const yes = await runtime.confirm?.('Continue? [y/N] ');
+            new Output(runtime).success(`answer: ${yes === true ? 'yes' : 'no'}`);
+          }),
       ],
     },
   ];
@@ -48,7 +55,13 @@ function createShell({ terminal = false } = {}) {
   });
 
   const done = startShell({ input, output, createRuntime, groups, terminal });
-  return { input, done, waiting: waiting.promise, screen: () => screen };
+  return {
+    input,
+    done,
+    waiting: waiting.promise,
+    asking: asking.promise,
+    screen: () => screen,
+  };
 }
 
 describe('startShell', () => {
@@ -105,6 +118,37 @@ describe('startShell', () => {
 
     expect(await shell.done).toBe(0);
     expect(shell.screen()).toContain('▸ stopped');
+    expect(shell.screen()).toContain('✔ after');
+  });
+
+  // 질문이 나오기 전에 입력한 줄은 질문이 아니라 다음 명령으로 가므로, 답마다 셸을 새로 엽니다.
+  it.each([
+    ['y', 'yes'],
+    ['', 'no'],
+  ])('lets commands ask a yes/no question (answer %j)', async (answer, result) => {
+    const shell = createShell();
+
+    shell.input.write('ask\n');
+    await shell.asking;
+    shell.input.write(`${answer}\n`);
+    shell.input.write('exit\n');
+
+    expect(await shell.done).toBe(0);
+    expect(shell.screen()).toContain('Continue? [y/N] ');
+    expect(shell.screen()).toContain(`✔ answer: ${result}`);
+  });
+
+  it('cancels a question on Ctrl+C and keeps the shell running', async () => {
+    const shell = createShell({ terminal: true });
+
+    shell.input.write('ask\r');
+    await shell.asking;
+    shell.input.write(CTRL_C);
+    shell.input.write('echo after\r');
+    shell.input.write('exit\r');
+
+    expect(await shell.done).toBe(0);
+    expect(shell.screen()).not.toContain('answer:');
     expect(shell.screen()).toContain('✔ after');
   });
 

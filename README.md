@@ -111,6 +111,37 @@ Each hop is printed as soon as it finishes. The exit code is 1 when the host is 
 
 With `--watch`, the route is found once and then every hop is pinged each round, the way Windows' `pathping` works, and the table shows loss, last, average, best and worst times per hop. Routers often answer pings slowly or not at all while still forwarding traffic, so loss at a middle hop only matters when it carries on to the hops after it.
 
+### scan
+
+Finds the open TCP ports of a host. It opens a full TCP connection to each port (a connect scan), so it needs no admin rights. By default it checks the 1000 ports that [Nmap](https://nmap.org) scans by default, 500 at a time.
+
+```console
+$ unt scan 192.168.0.1                # the 1000 most common ports
+$ unt scan 192.168.0.1 -p 22,80,443   # only these ports
+$ unt scan 192.168.0.1 -p 1-1024      # a range
+$ unt scan 192.168.0.1 -p -           # every port (1-65535)
+$ unt scan 192.168.0.1 --banner       # also show what each service says about itself
+$ unt scan 192.168.0.1 --all          # also list the closed and filtered ports
+```
+
+| Option | Description |
+| --- | --- |
+| `-p, --ports <list>` | Ports to scan, such as `22,80,443`, `1-1024` or `-` for all (default: the 1000 most common ports) |
+| `-a, --all` | Show closed and filtered ports too |
+| `-b, --banner` | Read what each open port says about itself |
+| `-y, --yes` | Scan a public address without asking |
+| `-W, --timeout <ms>` | Time to wait for each port (default: 1500) |
+| `--concurrency <n>` | Ports to try at the same time (default: 500) |
+| `-4, --ipv4` / `-6, --ipv6` | Use IPv4 or IPv6 only |
+
+A port is **open** when it accepts the connection, **closed** when the host refuses it, and **filtered** when nothing answers in time, usually because a firewall drops the connection. The table lists the open ports and the summary counts the rest. Press Ctrl+C to stop early and see what was found so far.
+
+With `--banner`, `scan` waits for the greeting that services such as SSH, FTP and SMTP send first. If there is none, it sends an HTTP `HEAD` request and shows the status line and the `Server` header. It also tries TLS, so HTTPS on unusual ports shows up with its TLS version, and MySQL servers show their version.
+
+Scanning a public address (anything outside the private, loopback and other reserved ranges) asks for confirmation first, because the host may belong to someone else. Pass `--yes` to skip the question in scripts; without a terminal to ask, `scan` refuses public addresses unless `--yes` is given. See [Responsible use](#responsible-use).
+
+The default port list is the one Nmap uses for `--top-ports 1000`, computed from the frequency data in Nmap's `nmap-services`. Service names come from the [IANA port registry](https://www.iana.org/assignments/service-names-port-numbers/).
+
 ### whois
 
 Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.

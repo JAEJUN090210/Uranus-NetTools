@@ -45,3 +45,21 @@ export function padDisplay(text: string, width: number, align: 'left' | 'right' 
   const padding = ' '.repeat(Math.max(0, width - displayWidth(text)));
   return align === 'left' ? text + padding : padding + text;
 }
+
+/** 표시 폭이 width를 넘으면 잘라서 끝에 ellipsis를 붙입니다. 색상 코드가 없는 글자에만 씁니다. */
+export function truncateDisplay(text: string, width: number, ellipsis = '…'): string {
+  if (displayWidth(text) <= width) {
+    return text;
+  }
+  const limit = width - displayWidth(ellipsis);
+  let result = '';
+  let used = 0;
+  for (const { segment } of segmenter.segment(text)) {
+    used += graphemeWidth(segment);
+    if (used > limit) {
+      break;
+    }
+    result += segment;
+  }
+  return result + ellipsis;
+}

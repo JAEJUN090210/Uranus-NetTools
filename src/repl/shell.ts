@@ -2,6 +2,7 @@ import * as readline from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
 
 import pkg from '../../package.json' with { type: 'json' };
+import { isYes } from '../cli/confirm';
 import { COMMAND_GROUPS, type CommandGroup, createProgram } from '../cli/program';
 import { runCommand } from '../cli/run';
 import type { Runtime } from '../cli/runtime';
@@ -40,6 +41,23 @@ export async function startShell(options: ShellOptions): Promise<number> {
 
   let running: AbortController | undefined;
   let exitArmed = false;
+
+  /** 명령이 확인을 받을 때 셸의 readline으로 묻습니다. Ctrl+C를 누르면 질문도 취소됩니다. */
+  const ask = (question: string, signal: AbortSignal) =>
+    new Promise<boolean>((resolve, reject) => {
+      const onAbort = () => {
+        reject(signal.reason as Error);
+      };
+      if (signal.aborted) {
+        onAbort();
+        return;
+      }
+      signal.addEventListener('abort', onAbort, { once: true });
+      rl.question(question, { signal }, (answer) => {
+        signal.removeEventListener('abort', onAbort);
+        resolve(isYes(answer));
+      });
+    });
 
   rl.on('SIGINT', () => {
     // 실행 중인 명령이 있으면 그 명령만 취소하고 셸은 계속 둡니다.
@@ -87,10 +105,14 @@ export async function startShell(options: ShellOptions): Promise<number> {
     }
 
     running = new AbortController();
+    const { signal } = running;
     try {
       await runCommand(
         name === 'help' ? [...rest, '--help'] : args,
-        createRuntime(running.signal),
+        {
+          ...createRuntime(signal),
+          confirm: (question) => ask(question, signal),
+        },
         groups,
       );
     } finally {

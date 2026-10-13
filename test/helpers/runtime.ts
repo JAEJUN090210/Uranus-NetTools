@@ -5,6 +5,7 @@ export interface TestRuntimeOptions {
   readonly platform?: NodeJS.Platform;
   readonly tty?: boolean;
   readonly signal?: AbortSignal;
+  readonly confirm?: (question: string) => Promise<boolean>;
 }
 
 /** 출력 내용을 문자열로 모으는 테스트용 실행 환경을 만듭니다. */
@@ -30,6 +31,7 @@ export function createTestRuntime(options: TestRuntimeOptions = {}) {
     env: options.env ?? {},
     platform: options.platform ?? 'linux',
     signal: options.signal ?? new AbortController().signal,
+    confirm: options.confirm,
     exitCode: 0,
   };
   return { runtime, stdout: () => stdout, stderr: () => stderr };
