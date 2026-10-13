@@ -93,6 +93,8 @@ $ unt ping google.com 1.1.1.1 8.8.8.8    # 여러 호스트를 표로 비교
 $ unt trace google.com          # 호스트 이름 포함
 $ unt trace google.com -n       # IP만 표시, 더 빠름
 $ unt trace 1.1.1.1 -m 15       # 15홉까지만
+$ unt trace google.com --watch  # mtr처럼 경유지를 계속 측정 (Ctrl+C로 멈춤)
+$ unt trace google.com -c 20    # 20라운드 측정 후 표 출력
 ```
 
 | 옵션 | 설명 |
@@ -101,8 +103,13 @@ $ unt trace 1.1.1.1 -m 15       # 15홉까지만
 | `-W, --timeout <ms>` | 응답을 기다리는 시간 (기본값: 2000) |
 | `-n, --numeric` | 호스트 이름을 조회하지 않고 IP만 표시 |
 | `-4, --ipv4` / `-6, --ipv6` | IPv4 또는 IPv6만 사용 |
+| `--watch` | 경유지를 계속 측정하며 표를 실시간으로 갱신 |
+| `-c, --count <rounds>` | watch 모드에서 측정할 라운드 수, `--watch` 포함 |
+| `-i, --interval <seconds>` | watch 모드의 라운드 간격(초) (기본값: 1), `--watch` 포함 |
 
 경유지는 끝나는 대로 한 줄씩 출력됩니다. 목적지에 닿지 못하면 종료 코드는 1입니다.
+
+`--watch`는 Windows의 `pathping`처럼 경로를 한 번 찾은 뒤 라운드마다 모든 경유지에 ping을 보내고, 경유지별 손실률과 최근·평균·최소·최대 응답 시간을 보여줍니다. 라우터는 트래픽을 정상적으로 전달하면서도 ping에는 늦게 답하거나 답하지 않는 경우가 많습니다. 그래서 중간 경유지의 손실은 그 뒤 경유지들까지 이어질 때만 의미가 있습니다.
 
 ### whois
 

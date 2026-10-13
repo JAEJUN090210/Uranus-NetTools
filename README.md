@@ -93,6 +93,8 @@ Shows each router on the way to a host and how long it takes to reply. It runs t
 $ unt trace google.com          # with host names
 $ unt trace google.com -n       # IP addresses only, faster
 $ unt trace 1.1.1.1 -m 15       # stop after 15 hops
+$ unt trace google.com --watch  # keep measuring every hop, like mtr (Ctrl+C to stop)
+$ unt trace google.com -c 20    # measure 20 rounds, then print the table
 ```
 
 | Option | Description |
@@ -101,8 +103,13 @@ $ unt trace 1.1.1.1 -m 15       # stop after 15 hops
 | `-W, --timeout <ms>` | Time to wait for each reply (default: 2000) |
 | `-n, --numeric` | Show IP addresses only, without looking up host names |
 | `-4, --ipv4` / `-6, --ipv6` | Use IPv4 or IPv6 only |
+| `--watch` | Keep measuring every hop and update the table live |
+| `-c, --count <rounds>` | Rounds to measure in watch mode, implies `--watch` |
+| `-i, --interval <seconds>` | Seconds between rounds in watch mode (default: 1), implies `--watch` |
 
 Each hop is printed as soon as it finishes. The exit code is 1 when the host is not reached.
+
+With `--watch`, the route is found once and then every hop is pinged each round, the way Windows' `pathping` works, and the table shows loss, last, average, best and worst times per hop. Routers often answer pings slowly or not at all while still forwarding traffic, so loss at a middle hop only matters when it carries on to the hops after it.
 
 ### whois
 
