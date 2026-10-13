@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { displayWidth, padDisplay } from '../../src/ui/width';
+import { displayWidth, padDisplay, truncateDisplay } from '../../src/ui/width';
 
 describe('displayWidth', () => {
   it.each([
@@ -24,5 +24,17 @@ describe('padDisplay', () => {
 
   it('pads on the left for right alignment', () => {
     expect(padDisplay('7', 3, 'right')).toBe('  7');
+  });
+});
+
+describe('truncateDisplay', () => {
+  it('keeps text that fits', () => {
+    expect(truncateDisplay('abc', 3)).toBe('abc');
+  });
+
+  it('cuts by display width and ends with an ellipsis', () => {
+    expect(truncateDisplay('abcdef', 4)).toBe('abc…');
+    expect(truncateDisplay('한글자막', 5)).toBe('한글…');
+    expect(truncateDisplay('abcdef', 5, '...')).toBe('ab...');
   });
 });
