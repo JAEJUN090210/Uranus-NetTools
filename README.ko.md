@@ -226,6 +226,35 @@ $ unt http api.example.com -X POST -d "a=1"
 
 보안 헤더 점검은 `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`를 확인하고, 없는 헤더는 그것이 하는 일을 함께 설명합니다. CSP에 `frame-ancestors`가 있으면 `X-Frame-Options` 대신으로 인정합니다. 빠진 헤더는 알려 주기만 하고 종료 코드에는 영향을 주지 않습니다.
 
+### cert
+
+서버가 보내는 TLS 인증서를 보여줍니다. 누구에게 누가 발급했는지, 언제 만료되는지, 어떤 이름에 쓸 수 있는지, 물어본 호스트에 유효한지, 내 시스템이 신뢰하는지를 확인합니다. 만료되거나 자체 서명된 인증서도 거부하지 않고 이유와 함께 보여주므로 무엇이 잘못됐는지 알 수 있습니다.
+
+```console
+$ unt cert example.com                      # 서버 인증서
+$ unt cert example.com --chain              # 중간·루트 인증서까지
+$ unt cert example.com:8443                 # 다른 포트
+$ unt cert mail.example.com --starttls smtp # 평문으로 시작하는 메일 서버
+$ unt cert example.com --pem                # 인증서 원본
+```
+
+| 옵션 | 설명 |
+| --- | --- |
+| `-p, --port <port>` | 연결할 포트 (기본값: 443) |
+| `--starttls <protocol>` | 평문으로 시작해 TLS로 전환 (`smtp`, `imap`, `pop3`, `ftp`) |
+| `--chain` | 중간·루트 인증서까지 표시 |
+| `--pem` | 인증서를 PEM 형식으로 출력 |
+| `--expiry-days <days>` | 남은 일수가 이 값 이하면 경고 (기본값: 30) |
+| `-W, --timeout <ms>` | 서버를 기다리는 시간 (기본값: 10000) |
+
+기본으로는 서버 자신의 인증서만 보여줍니다. `--chain`을 주면 중간·루트 인증서와 각각의 만료일까지 보여주므로, 중간 인증서가 곧 만료되는 상황도 놓치지 않습니다.
+
+남은 기간이 30일 이하면 경고만 하고 정상 종료합니다. 매일 자동으로 확인해도 문제가 생기기 전까지는 조용합니다. 실제로 만료된 뒤에만 종료 코드가 1이 됩니다. 경고 기준은 `--expiry-days`로 바꿀 수 있습니다.
+
+이름 확인은 물어본 호스트를 인증서의 SAN과 비교하며, 와일드카드도 규격대로 처리합니다(`*.example.com`은 `www.example.com`에는 맞지만 `a.b.example.com`에는 맞지 않습니다). 신뢰 여부는 운영체제의 인증기관 목록으로 따로 확인하고, 실패하면 그 이유를 보여줍니다.
+
+`--starttls`를 주면 평문으로 연결한 뒤 프로토콜이 정한 방식으로 TLS로 전환합니다. 메일 서버와 FTP 서버가 보통 이렇게 동작합니다. 이때 포트 기본값은 각 프로토콜의 일반 포트입니다. SMTP는 587, IMAP은 143, POP3는 110, FTP는 21입니다.
+
 ### whois
 
 도메인, IP 대역, AS 번호를 누가 언제 등록했는지 조회합니다. 등록 기관의 RDAP 서버에 먼저 묻고, 아직 RDAP을 제공하지 않는 국가 도메인은 기존 WHOIS(43번 포트)로 조회합니다.
