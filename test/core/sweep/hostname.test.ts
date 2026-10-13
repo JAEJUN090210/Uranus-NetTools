@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { encodeDnsName, parseNetbios, parsePtrAnswer } from '../../../src/core/sweep/hostname';
+import { parseNetbios, parsePtrAnswer } from '../../../src/core/sweep/hostname';
+import { encodeName } from '../../../src/core/dns/wire';
 
 /** 컴퓨터 이름 하나(접미사 지정)를 담은 NetBIOS 노드 상태 응답을 만듭니다. */
 function netbiosReply(name: string, suffix: number, group = false): Buffer {
@@ -34,11 +35,11 @@ describe('parseNetbios', () => {
 /** "질문 이름 / PTR 응답(rdata = name)" 형태의 DNS 응답을 만듭니다. */
 function ptrReply(query: string, answer: string | undefined): Buffer {
   const header = Buffer.from([0x13, 0x37, 0x84, 0x00, 0, 1, answer ? 1 : 0, 0, 0, 0, 0, 0]);
-  const question = Buffer.concat([encodeDnsName(query), Buffer.from([0x00, 0x0c, 0x00, 0x01])]);
+  const question = Buffer.concat([encodeName(query), Buffer.from([0x00, 0x0c, 0x00, 0x01])]);
   if (answer === undefined) {
     return Buffer.concat([header, question]);
   }
-  const rdata = encodeDnsName(answer);
+  const rdata = encodeName(answer);
   const rdLength = Buffer.alloc(2);
   rdLength.writeUInt16BE(rdata.length, 0);
   const rr = Buffer.concat([
@@ -59,11 +60,5 @@ describe('parsePtrAnswer', () => {
 
   it('returns nothing when there is no answer', () => {
     expect(parsePtrAnswer(ptrReply('5.0.168.192.in-addr.arpa', undefined))).toBeUndefined();
-  });
-});
-
-describe('encodeDnsName', () => {
-  it('encodes each label with its length and a zero terminator', () => {
-    expect([...encodeDnsName('a.bc')]).toEqual([1, 0x61, 2, 0x62, 0x63, 0]);
   });
 });

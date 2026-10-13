@@ -1,6 +1,8 @@
 import { createSocket } from 'node:dgram';
 import { Resolver } from 'node:dns/promises';
 
+import { encodeName, readName } from '../dns/wire';
+
 export interface HostnameOptions {
   readonly timeoutMs: number;
   readonly signal: AbortSignal;
@@ -94,7 +96,7 @@ export function parseNetbios(reply: Buffer): string | undefined {
 /** 주소의 역방향 이름(a.b.c.d.in-addr.arpa)을 mDNS로 물어 `.local` 이름을 읽습니다. */
 async function mdnsName(address: string, options: HostnameOptions): Promise<string | undefined> {
   const labels = `${address.split('.').reverse().join('.')}.in-addr.arpa`;
-  const question = [encodeDnsName(labels), Buffer.from([0x00, 0x0c, 0x80, 0x01])]; // PTR, 유니캐스트 응답 요청(IN)
+  const question = [encodeName(labels), Buffer.from([0x00, 0x0c, 0x80, 0x01])]; // PTR, 유니캐스트 응답 요청(IN)
   const header = Buffer.from([0x13, 0x37, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]);
   const reply = await queryUdp(address, MDNS_PORT, Buffer.concat([header, ...question]), options);
   return reply === undefined ? undefined : parsePtrAnswer(reply);
@@ -105,68 +107,14 @@ export function parsePtrAnswer(reply: Buffer): string | undefined {
     if (reply.readUInt16BE(6) < 1) {
       return undefined; // 응답(answer)이 없습니다.
     }
-    let offset = 12;
-    offset = skipName(reply, offset) + 4; // 질문 이름 + 타입·클래스
-    offset = skipName(reply, offset); // 응답 RR 이름
-    offset += 2 + 2 + 4; // 타입·클래스·TTL
-    const rdLength = reply.readUInt16BE(offset);
-    offset += 2;
-    const name = readName(reply, offset, offset + rdLength);
-    const trimmed = name.replace(/\.$/, '');
-    return trimmed === '' ? undefined : trimmed;
+    const question = readName(reply, 12);
+    const answer = readName(reply, question.next + 4); // 질문의 타입·클래스를 건너뜁니다.
+    // 응답 RR의 타입·클래스·TTL·길이를 건너뛰면 이름이 담긴 rdata가 나옵니다.
+    const { name } = readName(reply, answer.next + 2 + 2 + 4 + 2);
+    return name === '' ? undefined : name;
   } catch {
     return undefined;
   }
-}
-
-export function encodeDnsName(name: string): Buffer {
-  const parts = name.split('.').map((label) => {
-    const bytes = Buffer.from(label, 'utf8');
-    return Buffer.concat([Buffer.from([bytes.length]), bytes]);
-  });
-  return Buffer.concat([...parts, Buffer.from([0])]);
-}
-
-/** 이름(압축 포인터 포함) 바로 뒤의 오프셋을 돌려줍니다. */
-function skipName(buffer: Buffer, start: number): number {
-  let offset = start;
-  for (;;) {
-    const length = buffer[offset];
-    if (length === undefined || length === 0) {
-      return offset + 1;
-    }
-    if ((length & 0xc0) === 0xc0) {
-      return offset + 2; // 포인터는 2바이트입니다.
-    }
-    offset += 1 + length;
-  }
-}
-
-/** 압축 포인터를 따라가며 이름을 읽습니다. limit은 포인터가 아닌 레이블의 끝 경계입니다. */
-function readName(buffer: Buffer, start: number, limit: number): string {
-  const labels: string[] = [];
-  let offset = start;
-  let jumped = false;
-  let guard = 0;
-  for (;;) {
-    const length = buffer[offset];
-    if (length === undefined || length === 0 || guard++ > 128) {
-      break;
-    }
-    if ((length & 0xc0) === 0xc0) {
-      const pointer = ((length & 0x3f) << 8) | (buffer[offset + 1] ?? 0);
-      offset = pointer;
-      jumped = true;
-      continue;
-    }
-    offset += 1;
-    labels.push(buffer.subarray(offset, offset + length).toString('utf8'));
-    offset += length;
-    if (!jumped && offset >= limit) {
-      break;
-    }
-  }
-  return labels.join('.');
 }
 
 /** UDP 요청을 보내고 첫 응답을 기다립니다. 응답이 없거나 취소되면 undefined입니다. */
