@@ -1,4 +1,5 @@
 import { isMissingRecord } from './dns';
+import { reversedLabels } from './reverse-name';
 
 /** BGP에서 이 주소를 광고하는 AS 정보입니다. Team Cymru의 IP-to-ASN 서비스에서 가져옵니다. */
 export interface AsnInfo {
@@ -23,33 +24,10 @@ interface Origin {
   readonly allocated?: string;
 }
 
-/** "2001:db8::1" → "20010db8000000000000000000000001" (32자리 16진수) */
-export function expandIpv6(address: string): string {
-  let text = address.split('%')[0] ?? address;
-  // ::ffff:192.0.2.1 처럼 끝에 IPv4가 붙은 주소는 16진수 두 그룹으로 바꿉니다.
-  const embedded = /(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(text);
-  if (embedded) {
-    const [whole, ...octets] = embedded;
-    const [a = 0, b = 0, c = 0, d = 0] = octets.map(Number);
-    text = `${text.slice(0, -whole.length)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
-  }
-  const [head = '', tail] = text.split('::');
-  const headGroups = head === '' ? [] : head.split(':');
-  const tailGroups = tail === undefined || tail === '' ? [] : tail.split(':');
-  const missing = tail === undefined ? 0 : 8 - headGroups.length - tailGroups.length;
-  return [...headGroups, ...Array.from({ length: missing }, () => '0'), ...tailGroups]
-    .map((group) => group.padStart(4, '0'))
-    .join('')
-    .toLowerCase();
-}
-
 /** 8.8.8.8 → 8.8.8.8.origin.asn.cymru.com 처럼 주소를 거꾸로 뒤집은 질의 이름을 만듭니다. */
 export function originQueryName(address: string, family: 4 | 6): string {
-  if (family === 4) {
-    return `${address.split('.').reverse().join('.')}.origin.asn.cymru.com`;
-  }
-  // 펼친 주소는 16진수 숫자뿐이라 글자 단위로 나눠도 안전합니다.
-  return `${expandIpv6(address).split('').reverse().join('.')}.origin6.asn.cymru.com`;
+  const zone = family === 4 ? 'origin.asn.cymru.com' : 'origin6.asn.cymru.com';
+  return `${reversedLabels(address, family)}.${zone}`;
 }
 
 /** "13335 209242 | 1.1.1.0/24 | AU | apnic | 2011-08-11" */

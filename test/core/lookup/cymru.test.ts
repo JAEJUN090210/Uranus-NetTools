@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  expandIpv6,
   lookupAsn,
   originQueryName,
   parseAsName,
   parseOrigin,
 } from '../../../src/core/lookup/cymru';
+import { expandIpv6, ptrQueryName } from '../../../src/core/lookup/reverse-name';
 
 function missing(): Promise<never> {
   return Promise.reject(Object.assign(new Error('queryTxt ENOTFOUND'), { code: 'ENOTFOUND' }));
@@ -22,6 +22,13 @@ describe('expandIpv6', () => {
     ['2001:DB8:0:0:0:0:0:1', '20010db8000000000000000000000001'],
   ])('%s → %s', (address, expanded) => {
     expect(expandIpv6(address)).toBe(expanded);
+  });
+});
+
+describe('ptrQueryName', () => {
+  it('builds reverse DNS names for both address families', () => {
+    expect(ptrQueryName('8.8.4.4', 4)).toBe('4.4.8.8.in-addr.arpa');
+    expect(ptrQueryName('2001:db8::1', 6)).toBe(`1.${'0.'.repeat(23)}8.b.d.0.1.0.0.2.ip6.arpa`);
   });
 });
 

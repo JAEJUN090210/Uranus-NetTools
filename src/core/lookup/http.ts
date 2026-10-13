@@ -7,6 +7,8 @@ export interface HttpOptions {
   readonly signal: AbortSignal;
   readonly timeoutMs: number;
   readonly fetch?: typeof fetch;
+  /** 기본값은 RDAP과 일반 JSON을 받는 헤더입니다. */
+  readonly accept?: string;
 }
 
 export interface JsonResponse {
@@ -22,7 +24,10 @@ export async function getJson(url: string, options: HttpOptions): Promise<JsonRe
   const request = options.fetch ?? fetch;
   try {
     const response = await request(url, {
-      headers: { accept: 'application/rdap+json, application/json', 'user-agent': USER_AGENT },
+      headers: {
+        accept: options.accept ?? 'application/rdap+json, application/json',
+        'user-agent': USER_AGENT,
+      },
       signal: AbortSignal.any([options.signal, AbortSignal.timeout(options.timeoutMs)]),
     });
     const text = await response.text();
