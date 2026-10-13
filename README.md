@@ -325,6 +325,30 @@ $ unt info google.com --no-geo   # do not send the addresses to location service
 
 If one of the lookups fails, the rest are still shown with a warning and the exit code is 1.
 
+### local
+
+Shows this computer's own network setup: the host name and operating system, the default gateway, the configured DNS servers, and every interface with its addresses, MAC address and vendor. It asks nothing of the network, so it works offline and finishes instantly.
+
+```console
+$ unt local            # interfaces, gateway and DNS servers
+$ unt local --all      # loopback, link-local and empty interfaces too
+$ unt local --public   # also look up the public IP address
+```
+
+| Option | Description |
+| --- | --- |
+| `-a, --all` | Show loopback, link-local and interfaces without an address |
+| `--public` | Also ask an outside service for the public IP address |
+| `-W, --timeout <ms>` | Time to wait for the public IP lookup (default: 5000) |
+
+By default only interfaces that have a real address are listed, and loopback and link-local addresses (`127.0.0.1`, `169.254.x.x`, `fe80::`) are left out, which keeps the list short on machines with several virtual adapters. `--all` shows everything, including interfaces with no address at all.
+
+The vendor is looked up from the MAC address using the bundled [IEEE OUI registry](https://standards.ieee.org/products-programs/regauth/), the same data `sweep` uses. Modern Wi-Fi adapters often use a randomized MAC address for privacy; those have no vendor and are marked `randomized`.
+
+The default gateway is read from the operating system's routing table (`route print` on Windows, `ip route` on Linux, `netstat -rn` on macOS), because Node.js does not report it. Only the numbers are parsed, so a translated routing table works too.
+
+`--public` is the only part that leaves this computer: it asks [GeoJS](https://www.geojs.io) which address the internet sees. Without it, `local` sends nothing anywhere. If that lookup fails the rest is still shown and the exit code is 1.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.
