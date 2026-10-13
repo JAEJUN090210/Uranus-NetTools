@@ -156,6 +156,24 @@ $ unt geoip google.com
 
 Locations come from [FreeIPAPI](https://freeipapi.com), with [GeoJS](https://www.geojs.io) as a fallback. Both are free, need no API key and allow commercial use. To look up an address, `geoip` sends it to these services; private and reserved addresses are never sent. Locations are estimates and can differ between services.
 
+### info
+
+Shows everything about a domain or an IP address at once. For a domain it summarizes the registration (registrar, dates, name servers) and lists every address with its host name, AS number, owner and location. For an IP address it combines the details of `ip` and `geoip`.
+
+```console
+$ unt info google.com
+$ unt info 8.8.8.8
+$ unt info google.com --no-geo   # do not send the addresses to location services
+```
+
+| Option | Description |
+| --- | --- |
+| `-W, --timeout <ms>` | Time to wait for each lookup (default: 10000) |
+| `--no-geo` | Skip locations |
+| `-4, --ipv4` / `-6, --ipv6` | Use only the IPv4 or IPv6 addresses of a domain |
+
+If one of the lookups fails, the rest are still shown with a warning and the exit code is 1.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.

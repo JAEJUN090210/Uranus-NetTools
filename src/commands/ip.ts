@@ -8,7 +8,6 @@ import {
   createRegistrationLookup,
   lookupAddress,
 } from '../core/lookup/address-info';
-import type { AsnInfo } from '../core/lookup/cymru';
 import { createDnsTools, type DnsTools } from '../core/lookup/dns';
 import {
   createRegistrationService,
@@ -17,9 +16,9 @@ import {
 } from '../core/lookup/registration';
 import { parseLookupTarget } from '../core/lookup/target';
 import { type IpFamily, resolveAllAddresses } from '../core/resolve';
-import type { Field } from '../ui/fields';
 import { Output } from '../ui/output';
 import type { Column } from '../ui/table';
+import { addressFields } from './lookup-format';
 
 interface IpOptions {
   readonly timeout: number;
@@ -115,28 +114,6 @@ export function createIpCommand(
       });
       report(infos);
     });
-}
-
-function describeAsn(asn: AsnInfo): string {
-  return asn.name === undefined ? `AS${asn.asn}` : `AS${asn.asn} ${asn.name}`;
-}
-
-function addressFields(info: AddressInfo): Field[] {
-  const { asn, registration } = info;
-  return [
-    ['Address', info.address],
-    ['Hostname', info.hostname],
-    ['Scope', info.reserved ? 'private or reserved, no public registration' : undefined],
-    ['ASN', asn === undefined ? undefined : describeAsn(asn)],
-    ['Other ASNs', asn?.otherAsns.map((other) => `AS${other}`)],
-    ['BGP prefix', asn?.prefix],
-    ['Network', registration?.name],
-    ['CIDR', registration?.cidrs],
-    ['Organization', registration?.organization],
-    ['Country', registration?.country ?? asn?.country],
-    ['Registry', asn?.registry?.toUpperCase()],
-    ['Abuse', registration?.abuse],
-  ];
 }
 
 function addressColumns(output: Output): Column<AddressInfo>[] {

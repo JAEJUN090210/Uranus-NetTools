@@ -11,6 +11,7 @@ import { type IpFamily, resolveAllAddresses } from '../core/resolve';
 import type { Field } from '../ui/fields';
 import { Output } from '../ui/output';
 import type { Column } from '../ui/table';
+import { locationFields } from './lookup-format';
 
 interface GeoipOptions {
   readonly timeout: number;
@@ -130,10 +131,6 @@ function printSources(output: Output, entries: readonly GeoEntry[]): void {
   }
 }
 
-function formatCoordinate(value: number): string {
-  return String(Math.round(value * 10_000) / 10_000);
-}
-
 function entryFields(entry: GeoEntry): Field[] {
   const { location } = entry;
   if (entry.reserved || location === undefined) {
@@ -142,36 +139,7 @@ function entryFields(entry: GeoEntry): Field[] {
       ['Scope', 'private or reserved, no location'],
     ];
   }
-  const { latitude, longitude } = location;
-  const hasCoordinates = latitude !== undefined && longitude !== undefined;
-  const coordinates = hasCoordinates
-    ? `${formatCoordinate(latitude)}, ${formatCoordinate(longitude)}`
-    : undefined;
-  const map = hasCoordinates
-    ? `https://www.openstreetmap.org/?mlat=${formatCoordinate(latitude)}&mlon=${formatCoordinate(longitude)}#map=10/${formatCoordinate(latitude)}/${formatCoordinate(longitude)}`
-    : undefined;
-  return [
-    ['Address', entry.address],
-    [
-      'Country',
-      location.country !== undefined && location.countryCode !== undefined
-        ? `${location.country} (${location.countryCode})`
-        : (location.country ?? location.countryCode),
-    ],
-    ['Region', location.region],
-    ['City', location.city],
-    ['Postal code', location.postalCode],
-    ['Coordinates', coordinates],
-    ['Map', map],
-    ['Time zone', location.timeZone],
-    [
-      'ASN',
-      location.asn === undefined
-        ? location.organization
-        : `AS${location.asn}${location.organization === undefined ? '' : ` ${location.organization}`}`,
-    ],
-    ['Proxy', location.proxy === true ? 'yes, the address is a known proxy or VPN' : undefined],
-  ];
+  return [['Address', entry.address], ...locationFields(location)];
 }
 
 function entryColumns(output: Output): Column<GeoEntry>[] {
