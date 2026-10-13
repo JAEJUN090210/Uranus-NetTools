@@ -142,6 +142,30 @@ Scanning a public address (anything outside the private, loopback and other rese
 
 The default port list is the one Nmap uses for `--top-ports 1000`, computed from the frequency data in Nmap's `nmap-services`. Service names come from the [IANA port registry](https://www.iana.org/assignments/service-names-port-numbers/).
 
+### sweep
+
+Finds the active hosts on a local network. It pings each address (ICMP), tries a few common TCP ports for hosts that do not answer pings, and reads the operating system's ARP table to pick up hosts that stay silent but are still present. It needs no admin rights.
+
+```console
+$ unt sweep                      # the subnet this computer is on
+$ unt sweep 192.168.0.0/24       # a specific network
+$ unt sweep 192.168.0.1-50       # a range
+$ unt sweep 10.0.0.0/24 --no-hostnames   # skip name lookups, faster
+```
+
+| Option | Description |
+| --- | --- |
+| `-W, --timeout <ms>` | Time to wait for each probe (default: 1000) |
+| `--concurrency <n>` | Hosts to probe at the same time (default: 64) |
+| `--no-hostnames` | Do not look up host names (faster) |
+| `-y, --yes` | Sweep a public range without asking |
+
+Run without a range to sweep the subnet this computer is on. Give a CIDR block (`192.168.0.0/24`), a range (`192.168.0.1-50` or `192.168.0.1-192.168.0.50`) or a single address. A sweep covers up to 65,536 addresses (a `/16`); split larger networks into several runs.
+
+Each host is shown with its name, MAC address, vendor and response time. Host names come from reverse DNS, NetBIOS (mostly Windows PCs) and mDNS (`.local` names used by Apple devices, printers and the like), whichever answers first. The MAC address and vendor are read from the ARP table, so they appear only for hosts on the same LAN; the vendor is looked up from the [IEEE OUI registry](https://standards.ieee.org/products-programs/regauth/), which is bundled, so it works offline. Devices that use a random (privacy) MAC address have no vendor.
+
+Sweeping a public range (anything outside the private, loopback and other reserved ranges) asks for confirmation first, because the hosts may belong to someone else. Pass `--yes` to skip the question in scripts; without a terminal to ask, `sweep` refuses public ranges unless `--yes` is given. See [Responsible use](#responsible-use). Press Ctrl+C to stop early and see what was found so far.
+
 ### whois
 
 Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.
