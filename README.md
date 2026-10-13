@@ -349,6 +349,36 @@ The default gateway is read from the operating system's routing table (`route pr
 
 `--public` is the only part that leaves this computer: it asks [GeoJS](https://www.geojs.io) which address the internet sees. Without it, `local` sends nothing anywhere. If that lookup fails the rest is still shown and the exit code is 1.
 
+### conns
+
+Shows which ports this computer is listening on and which connections are open, with the process that owns each socket. Useful for answering "what is using port 3306?" and "what is this machine talking to?".
+
+```console
+$ unt conns                   # listening ports and open connections
+$ unt conns --listen          # only the ports being listened on
+$ unt conns -p 3306 --names   # who is using port 3306
+$ unt conns --established --resolve
+$ unt conns --udp
+```
+
+| Option | Description |
+| --- | --- |
+| `-l, --listen` | Show only the listening sockets |
+| `-e, --established` | Show only the sockets with a live connection |
+| `-p, --port <port>` | Show only sockets using this port, at either end |
+| `--tcp` / `--udp` | Show only TCP or only UDP sockets |
+| `--names` | Look up the name of the program owning each socket |
+| `--resolve` | Look up the host names of the remote addresses |
+| `-W, --timeout <ms>` | Time to wait for each system command (default: 10000) |
+
+The socket list comes from the operating system (`netstat -ano` on Windows, `ss` or `netstat` on Linux, `netstat` plus `lsof` on macOS), because Node.js cannot list sockets. Only the addresses and numbers are read, so a translated output works too.
+
+The process number is always shown. `--names` turns it into a program name as well, which costs one extra command (`tasklist` on Windows, `ps` elsewhere). Without administrator rights, sockets owned by other users may show no process at all; the address and state are still listed. Sockets with no owning process (Windows reports process 0 for those) are shown with an empty column.
+
+`--established` means a live connection only, so sockets that are being cleaned up (`TIME_WAIT`, `CLOSE_WAIT`) are left out; they still appear in the default listing.
+
+`--resolve` looks up the host name of each distinct remote address through reverse DNS, at most 16 at a time. Where the system DNS servers cannot be reached, it falls back to DNS-over-HTTPS the same way `ip` does. Many server addresses have no reverse record, so a missing name is normal.
+
 ## Installation
 
 Uranus-NetTools will be available through the following package managers.

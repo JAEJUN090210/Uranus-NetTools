@@ -2,6 +2,7 @@ import { Command, Option } from 'commander';
 
 import pkg from '../../package.json' with { type: 'json' };
 import { createCertCommand } from '../commands/cert';
+import { createConnsCommand } from '../commands/conns';
 import { createDnsCommand } from '../commands/dns';
 import { createGeoipCommand } from '../commands/geoip';
 import { createHttpCommand } from '../commands/http';
@@ -39,7 +40,7 @@ export const COMMAND_GROUPS: readonly CommandGroup[] = [
       createCertCommand,
     ],
   },
-  { heading: 'Local:', commands: [createLocalCommand] },
+  { heading: 'Local:', commands: [createLocalCommand, createConnsCommand] },
 ];
 
 export function createProgram(
