@@ -1,6 +1,7 @@
 import { Command, Option } from 'commander';
 
 import pkg from '../../package.json' with { type: 'json' };
+import { createDnsCommand } from '../commands/dns';
 import { createGeoipCommand } from '../commands/geoip';
 import { createInfoCommand } from '../commands/info';
 import { createIpCommand } from '../commands/ip';
@@ -25,7 +26,13 @@ export const COMMAND_GROUPS: readonly CommandGroup[] = [
   { heading: 'Scanning:', commands: [createScanCommand, createSweepCommand] },
   {
     heading: 'Lookup:',
-    commands: [createWhoisCommand, createIpCommand, createGeoipCommand, createInfoCommand],
+    commands: [
+      createDnsCommand,
+      createWhoisCommand,
+      createIpCommand,
+      createGeoipCommand,
+      createInfoCommand,
+    ],
   },
   { heading: 'Local:', commands: [] },
 ];

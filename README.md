@@ -166,6 +166,33 @@ Each host is shown with its name, MAC address, vendor and response time. Host na
 
 Sweeping a public range (anything outside the private, loopback and other reserved ranges) asks for confirmation first, because the hosts may belong to someone else. Pass `--yes` to skip the question in scripts; without a terminal to ask, `sweep` refuses public ranges unless `--yes` is given. See [Responsible use](#responsible-use). Press Ctrl+C to stop early and see what was found so far.
 
+### dns
+
+Looks up the DNS records of a domain. Without `--type` it asks for the records people usually want (A, AAAA, CNAME, MX, NS, TXT, SOA and CAA) at once and shows each one with its TTL. Give it an IP address to do a reverse (PTR) lookup.
+
+```console
+$ unt dns example.com                  # the main records
+$ unt dns example.com -t MX -t TXT     # only these types
+$ unt dns 8.8.8.8                      # reverse lookup
+$ unt dns example.com --server 9.9.9.9 # ask a specific server
+$ unt dns example.com --compare        # compare several servers
+$ unt dns example.com --trace          # follow the delegation from the root
+```
+
+| Option | Description |
+| --- | --- |
+| `-t, --type <types...>` | Record types to ask for (default: the main records) |
+| `-s, --server <address>` | IP address of the DNS server to ask instead of the system one |
+| `--compare` | Compare the answers of the system and public DNS servers |
+| `--trace` | Follow the delegation from the root servers down |
+| `-W, --timeout <ms>` | Time to wait for each query (default: 3000) |
+
+Queries go to the system's DNS server over UDP, and fall back to TCP automatically when an answer is too big to fit in one UDP packet. When the system has no usable DNS server (this happens with some VPNs on Windows, where only `127.0.0.1` is configured), the lookups go over HTTPS to a public DNS-over-HTTPS resolver instead. The exit code is 1 when no records are found.
+
+`--compare` asks the system server and [Cloudflare](https://1.1.1.1), [Google](https://developers.google.com/speed/public-dns) and [Quad9](https://www.quad9.net) the same question and puts the answers side by side, which is the quickest way to see whether a change has propagated yet. Servers that do not answer are reported separately and left out of the comparison. The exit code is 1 when the servers that answered disagree.
+
+`--trace` starts at the root servers and follows each delegation down to the authoritative server, the way `dig +trace` does, showing the name servers and timing of every step. It asks the root and authoritative servers directly over UDP port 53, so it does not work on networks that block that.
+
 ### whois
 
 Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.

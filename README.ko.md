@@ -166,6 +166,33 @@ $ unt sweep 10.0.0.0/24 --no-hostnames   # 이름 조회 생략, 더 빠름
 
 공인 범위(사설망·루프백 등 예약된 대역이 아닌 주소)는 남의 시스템일 수 있으므로 검사 전에 확인을 받습니다. 스크립트에서는 `--yes`로 질문을 건너뛸 수 있고, 물어볼 터미널이 없으면 `--yes` 없이는 공인 범위를 검사하지 않습니다. [책임 있는 사용](#책임-있는-사용)을 참고하세요. Ctrl+C를 누르면 검사를 멈추고 그때까지 찾은 결과를 보여줍니다.
 
+### dns
+
+도메인의 DNS 레코드를 조회합니다. `--type`을 주지 않으면 흔히 필요한 레코드(A, AAAA, CNAME, MX, NS, TXT, SOA, CAA)를 한 번에 조회하고 TTL을 함께 보여줍니다. IP 주소를 주면 역방향(PTR) 조회를 합니다.
+
+```console
+$ unt dns example.com                  # 주요 레코드
+$ unt dns example.com -t MX -t TXT     # 지정한 타입만
+$ unt dns 8.8.8.8                      # 역방향 조회
+$ unt dns example.com --server 9.9.9.9 # 특정 서버에 질의
+$ unt dns example.com --compare        # 여러 서버의 답 비교
+$ unt dns example.com --trace          # 루트부터 위임 경로 추적
+```
+
+| 옵션 | 설명 |
+| --- | --- |
+| `-t, --type <types...>` | 조회할 레코드 타입 (기본값: 주요 레코드) |
+| `-s, --server <address>` | 시스템 DNS 대신 물어볼 서버의 IP 주소 |
+| `--compare` | 시스템 DNS와 공개 DNS의 답을 비교 |
+| `--trace` | 루트 서버부터 위임을 따라가며 표시 |
+| `-W, --timeout <ms>` | 각 질의를 기다리는 시간 (기본값: 3000) |
+
+질의는 시스템 DNS 서버로 UDP로 보내고, 응답이 UDP 한 패킷에 담기지 않을 만큼 크면 자동으로 TCP로 다시 묻습니다. 시스템에 쓸 수 있는 DNS 서버가 없으면(Windows에서 일부 VPN을 쓰면 `127.0.0.1`만 설정되는 경우가 있습니다) HTTPS로 공개 DNS-over-HTTPS 서버에 묻습니다. 레코드를 찾지 못하면 종료 코드는 1입니다.
+
+`--compare`는 시스템 서버와 [Cloudflare](https://1.1.1.1), [Google](https://developers.google.com/speed/public-dns), [Quad9](https://www.quad9.net)에 같은 질문을 하고 답을 나란히 보여줍니다. 도메인을 바꾼 뒤 변경이 퍼졌는지 확인할 때 가장 빠릅니다. 답하지 않은 서버는 따로 알려 주고 비교에서는 빼며, 답한 서버들의 내용이 서로 다르면 종료 코드는 1입니다.
+
+`--trace`는 `dig +trace`처럼 루트 서버에서 시작해 권한 서버까지 위임을 따라가며 각 단계의 네임서버와 응답 시간을 보여줍니다. 루트·권한 서버에 UDP 53으로 직접 물어보므로, 그 포트가 막힌 네트워크에서는 동작하지 않습니다.
+
 ### whois
 
 도메인, IP 대역, AS 번호를 누가 언제 등록했는지 조회합니다. 등록 기관의 RDAP 서버에 먼저 묻고, 아직 RDAP을 제공하지 않는 국가 도메인은 기존 WHOIS(43번 포트)로 조회합니다.
