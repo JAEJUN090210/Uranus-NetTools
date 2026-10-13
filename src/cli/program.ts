@@ -3,6 +3,7 @@ import { Command, Option } from 'commander';
 import pkg from '../../package.json' with { type: 'json' };
 import { createDnsCommand } from '../commands/dns';
 import { createGeoipCommand } from '../commands/geoip';
+import { createHttpCommand } from '../commands/http';
 import { createInfoCommand } from '../commands/info';
 import { createIpCommand } from '../commands/ip';
 import { createPingCommand } from '../commands/ping';
@@ -32,6 +33,7 @@ export const COMMAND_GROUPS: readonly CommandGroup[] = [
       createIpCommand,
       createGeoipCommand,
       createInfoCommand,
+      createHttpCommand,
     ],
   },
   { heading: 'Local:', commands: [] },
