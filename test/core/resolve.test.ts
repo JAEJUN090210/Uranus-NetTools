@@ -1,6 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { resolveHost } from '../../src/core/resolve';
+
+vi.mock('node:dns/promises', async (importOriginal) =>
+  (await import('../helpers/dns')).instantNxdomainModule(importOriginal),
+);
 
 describe('resolveHost', () => {
   it('returns IP addresses as they are', async () => {

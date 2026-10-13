@@ -1,10 +1,14 @@
 import type { Server } from 'node:net';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { runCommand } from '../../src/cli/run';
 import { createTestRuntime, type TestRuntimeOptions } from '../helpers/runtime';
 import { closedPort, closeServer, listenLocally } from '../helpers/server';
+
+vi.mock('node:dns/promises', async (importOriginal) =>
+  (await import('../helpers/dns')).instantNxdomainModule(importOriginal),
+);
 
 const servers: Server[] = [];
 
