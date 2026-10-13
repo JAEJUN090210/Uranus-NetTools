@@ -137,15 +137,26 @@ export interface FakeDnsServer {
  * 실제 DNS 서버 없이 질의 생성과 응답 해석을 함께 확인할 수 있습니다.
  */
 export async function listenFakeDns(zone: FakeZone): Promise<FakeDnsServer> {
+  // UDP와 TCP가 같은 번호를 써야 하는데, Windows에는 예약돼 있어 쓸 수 없는 포트 범위가 있습니다.
+  // 그런 번호를 골랐으면 두 번째 bind가 EACCES로 실패하므로, 다른 번호로 몇 번 더 시도합니다.
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    try {
+      return await bindBoth(zone);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('could not open a fake DNS server');
+}
+
+/** UDP와 TCP를 같은 포트에 엽니다. 하나라도 실패하면 둘 다 닫고 예외를 던집니다. */
+async function bindBoth(zone: FakeZone): Promise<FakeDnsServer> {
   const udp: UdpSocket = createSocket('udp4');
+  udp.on('error', () => undefined);
   udp.on('message', (request, from) => {
     udp.send(buildReply(request, zone, false), from.port, from.address);
   });
-  await new Promise<void>((resolve) => {
-    udp.bind(0, '127.0.0.1', resolve);
-  });
-  const port = udp.address().port;
-
   const tcp: Server = createServer((socket) => {
     const chunks: Buffer[] = [];
     socket.on('error', () => undefined);
@@ -165,24 +176,49 @@ export async function listenFakeDns(zone: FakeZone): Promise<FakeDnsServer> {
       socket.write(Buffer.concat([length, reply]));
     });
   });
-  await new Promise<void>((resolve) => {
-    tcp.listen(port, '127.0.0.1', resolve);
-  });
+  tcp.on('error', () => undefined);
 
-  return {
-    address: '127.0.0.1',
-    port,
-    close: async () => {
-      await new Promise<void>((resolve) => {
-        udp.close(resolve);
+  const closeBoth = async () => {
+    await new Promise<void>((resolve) => {
+      udp.close(() => {
+        resolve();
       });
-      await new Promise<void>((resolve) => {
-        tcp.close(() => {
-          resolve();
-        });
+    });
+    await new Promise<void>((resolve) => {
+      tcp.close(() => {
+        resolve();
       });
-    },
+    });
   };
+
+  try {
+    const port = await listenUdp(udp);
+    await listenTcp(tcp, port);
+    return { address: '127.0.0.1', port, close: closeBoth };
+  } catch (error) {
+    await closeBoth();
+    throw error;
+  }
+}
+
+function listenUdp(udp: UdpSocket): Promise<number> {
+  return new Promise((resolve, reject) => {
+    udp.once('error', reject);
+    udp.bind(0, '127.0.0.1', () => {
+      udp.removeListener('error', reject);
+      resolve(udp.address().port);
+    });
+  });
+}
+
+function listenTcp(tcp: Server, port: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    tcp.once('error', reject);
+    tcp.listen(port, '127.0.0.1', () => {
+      tcp.removeListener('error', reject);
+      resolve();
+    });
+  });
 }
 
 export { buildQuery, parseMessage };

@@ -7,6 +7,7 @@ import { createGeoipCommand } from '../commands/geoip';
 import { createHttpCommand } from '../commands/http';
 import { createInfoCommand } from '../commands/info';
 import { createIpCommand } from '../commands/ip';
+import { createLocalCommand } from '../commands/local';
 import { createPingCommand } from '../commands/ping';
 import { createScanCommand } from '../commands/scan';
 import { createSweepCommand } from '../commands/sweep';
@@ -38,7 +39,7 @@ export const COMMAND_GROUPS: readonly CommandGroup[] = [
       createCertCommand,
     ],
   },
-  { heading: 'Local:', commands: [] },
+  { heading: 'Local:', commands: [createLocalCommand] },
 ];
 
 export function createProgram(
