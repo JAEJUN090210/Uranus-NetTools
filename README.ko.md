@@ -193,6 +193,39 @@ $ unt dns example.com --trace          # 루트부터 위임 경로 추적
 
 `--trace`는 `dig +trace`처럼 루트 서버에서 시작해 권한 서버까지 위임을 따라가며 각 단계의 네임서버와 응답 시간을 보여줍니다. 루트·권한 서버에 UDP 53으로 직접 물어보므로, 그 포트가 막힌 네트워크에서는 동작하지 않습니다.
 
+### http
+
+웹 서버가 어떻게 응답하는지 살펴봅니다. 상태 코드, 응답 헤더, 연결 단계별 소요 시간, 리다이렉션 경로, 권장 보안 헤더가 설정돼 있는지를 보여줍니다. 기본은 GET이지만 본문은 저장하지 않고 버리므로 큰 페이지에도 안전합니다.
+
+```console
+$ unt http example.com                      # 상태, 헤더, 시간
+$ unt http http://example.com               # HTTPS로 가는 리다이렉션 추적
+$ unt http example.com -I                   # GET 대신 HEAD
+$ unt http example.com -c 5                 # 5번 요청해 응답 시간 비교
+$ unt http api.example.com -H "Accept: application/json"
+$ unt http api.example.com -X POST -d "a=1"
+```
+
+| 옵션 | 설명 |
+| --- | --- |
+| `-X, --method <method>` | 사용할 HTTP 메서드 (기본값: GET) |
+| `-I, --head` | GET 대신 HEAD 전송 |
+| `-H, --header <header...>` | 추가 요청 헤더, 예: `"Accept: text/html"` |
+| `-d, --data <body>` | 요청 본문, `--method`가 없으면 POST |
+| `--no-follow` | 리다이렉션을 따라가지 않음 |
+| `--max-redirects <n>` | 따라갈 리다이렉션 횟수 (기본값: 10) |
+| `-c, --count <n>` | 지정한 횟수만큼 요청해 응답 시간 요약 |
+| `-W, --timeout <ms>` | 서버를 기다리는 시간 (기본값: 10000) |
+| `-k, --insecure` | 인증서를 검증할 수 없어도 계속 진행 |
+| `--no-http2` | HTTP/2를 제안하지 않음 |
+| `--no-headers` | 응답 헤더 목록을 표시하지 않음 |
+
+시간은 DNS 조회, TCP 연결, TLS 핸드셰이킹, 첫 바이트, 전체로 나눠 보여줍니다. 페이지가 느릴 때 원인이 DNS인지 핸드셰이킹인지 서버 자체인지 가장 빠르게 가릴 수 있습니다. HTTPS에서는 HTTP/2와 HTTP/1.1을 함께 제안하고 서버가 고른 쪽으로 요청하며, 실제로 쓴 버전을 표시합니다.
+
+리다이렉션은 끝까지 따라가고 거친 주소마다 상태 코드와 이동할 곳을 출력하므로, `http://` → `https://`나 `www` 규칙을 확인하기 쉽습니다. 최종 상태가 4xx·5xx이거나 `--max-redirects`보다 리다이렉션이 많으면 종료 코드는 1입니다.
+
+보안 헤더 점검은 `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`를 확인하고, 없는 헤더는 그것이 하는 일을 함께 설명합니다. CSP에 `frame-ancestors`가 있으면 `X-Frame-Options` 대신으로 인정합니다. 빠진 헤더는 알려 주기만 하고 종료 코드에는 영향을 주지 않습니다.
+
 ### whois
 
 도메인, IP 대역, AS 번호를 누가 언제 등록했는지 조회합니다. 등록 기관의 RDAP 서버에 먼저 묻고, 아직 RDAP을 제공하지 않는 국가 도메인은 기존 WHOIS(43번 포트)로 조회합니다.

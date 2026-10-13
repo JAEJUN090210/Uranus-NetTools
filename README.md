@@ -193,6 +193,39 @@ Queries go to the system's DNS server over UDP, and fall back to TCP automatical
 
 `--trace` starts at the root servers and follows each delegation down to the authoritative server, the way `dig +trace` does, showing the name servers and timing of every step. It asks the root and authoritative servers directly over UDP port 53, so it does not work on networks that block that.
 
+### http
+
+Checks what a web server answers: the status code, the response headers, how long each step of the connection took, where redirects lead, and which recommended security headers are set. It sends a GET by default and throws the body away, so it is safe to use on large pages.
+
+```console
+$ unt http example.com                      # status, headers, timing
+$ unt http http://example.com               # follow the redirect to HTTPS
+$ unt http example.com -I                   # HEAD instead of GET
+$ unt http example.com -c 5                 # request 5 times and compare timing
+$ unt http api.example.com -H "Accept: application/json"
+$ unt http api.example.com -X POST -d "a=1"
+```
+
+| Option | Description |
+| --- | --- |
+| `-X, --method <method>` | HTTP method to use (default: GET) |
+| `-I, --head` | Send HEAD instead of GET |
+| `-H, --header <header...>` | Extra request header, such as `"Accept: text/html"` |
+| `-d, --data <body>` | Request body, implies POST unless `--method` is given |
+| `--no-follow` | Do not follow redirects |
+| `--max-redirects <n>` | How many redirects to follow (default: 10) |
+| `-c, --count <n>` | Request this many times and summarize the timing |
+| `-W, --timeout <ms>` | Time to wait for the server (default: 10000) |
+| `-k, --insecure` | Carry on even if the certificate cannot be verified |
+| `--no-http2` | Do not offer HTTP/2 |
+| `--no-headers` | Do not list the response headers |
+
+The timing is broken down into DNS lookup, TCP connection, TLS handshake, first byte and total, which is the quickest way to see whether a slow page is slow because of DNS, the handshake or the server itself. Over HTTPS the connection offers both HTTP/2 and HTTP/1.1 and uses whichever the server picks, and the version actually used is shown.
+
+Redirects are followed to the end and every hop is printed with its status and target, so `http://` to `https://` and `www` rules are easy to check. The exit code is 1 when the final status is 4xx or 5xx, or when there were more redirects than `--max-redirects` allows.
+
+The security header check looks for `Strict-Transport-Security`, `Content-Security-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`, and explains what each missing one would do. A `frame-ancestors` rule in the CSP counts in place of `X-Frame-Options`. Missing headers are reported but do not change the exit code.
+
 ### whois
 
 Looks up who registered a domain, an IP address block or an AS number, and when. It asks the registry's RDAP server first and falls back to classic WHOIS (port 43) for country domains that do not offer RDAP yet.
