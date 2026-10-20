@@ -30,6 +30,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsx scripts/build.ts",
     "build:sea": "tsx scripts/build-sea.ts",
+    "build:deb": "tsx scripts/build-deb.ts",
     "typecheck": "tsc",
     "lint": "eslint .",
     "format": "prettier --write .",
