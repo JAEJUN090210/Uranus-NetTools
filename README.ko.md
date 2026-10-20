@@ -9,9 +9,6 @@
 
 Uranus-NetTools(`unt`)는 Windows, Linux, macOS에서 동작하는 커맨드라인 네트워크 도구 모음입니다. 자주 쓰는 진단, 스캔, 조회 도구를 하나의 일관된 인터페이스로 묶었습니다. 명령을 한 번씩 실행할 수도 있고, 대화형 셸에 들어가 이어서 입력할 수도 있습니다. TypeScript와 Node.js로 만듭니다.
 
-> [!NOTE]
-> 1.0.0 버전이 나왔습니다. 아래 패키지 매니저로는 아직 올리지 않았으니, 당장은 [소스에서 빌드](#소스에서-빌드하기)해서 설치하세요.
-
 ## 기능
 
 | 분류 | 도구 |
@@ -381,17 +378,58 @@ $ unt conns --udp
 
 ## 설치
 
-아래 패키지 매니저로 배포할 예정입니다. 아직 올리지 않았으니 그때까지는 [소스에서 빌드](#소스에서-빌드하기)하세요.
+`unt`는 Node.js를 함께 담은 실행 파일 하나라서 따로 설치할 것이 없습니다. Windows 10 이상(x64), macOS 13.5 이상(Apple 실리콘, Intel), glibc 2.28 이상인 Linux(x64, arm64)에서 동작합니다.
 
 | 플랫폼 | 패키지 매니저 | 상태 |
 | --- | --- | --- |
-| Ubuntu | apt | 준비 중 |
-| macOS | Homebrew | 준비 중 |
-| Windows | winget | 준비 중 |
+| Ubuntu, Debian | [apt](#apt-ubuntu-debian) | 사용 가능 |
+| macOS | [Homebrew](#homebrew-macos) | 사용 가능 |
+| Windows | winget | 준비 중. 당장은 [직접 내려받기](#직접-내려받기)를 쓰세요 |
+
+### apt (Ubuntu, Debian)
+
+저장소와 서명 키를 한 번 등록한 뒤 설치합니다.
+
+```console
+$ sudo install -d -m 0755 /etc/apt/keyrings
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/apt/uranus-nettools.gpg | sudo tee /etc/apt/keyrings/uranus-nettools.gpg > /dev/null
+$ echo "deb [signed-by=/etc/apt/keyrings/uranus-nettools.gpg] https://jaejun090210.github.io/Uranus-NetTools/apt stable main" | sudo tee /etc/apt/sources.list.d/uranus-nettools.list
+$ sudo apt update
+$ sudo apt install unt
+```
+
+새 버전은 `sudo apt upgrade`로 받습니다. amd64와 arm64용 패키지가 있고, Ubuntu 20.04와 Debian 11 이후 버전에 설치됩니다.
+
+### Homebrew (macOS)
+
+```console
+$ brew install jaejun090210/tap/unt
+```
+
+새 버전은 `brew upgrade`로 받습니다.
+
+### 직접 내려받기
+
+[릴리스](https://github.com/JAEJUN090210/Uranus-NetTools/releases/latest)마다 아래 파일이 올라갑니다.
+
+| 플랫폼 | 파일 |
+| --- | --- |
+| Windows x64 | `unt-<버전>-windows-x64.zip` |
+| macOS Apple 실리콘 | `unt-<버전>-macos-arm64.tar.gz` |
+| macOS Intel | `unt-<버전>-macos-x64.tar.gz` |
+| Linux x64 | `unt-<버전>-linux-x64.tar.gz`, `unt_<버전>_amd64.deb` |
+| Linux arm64 | `unt-<버전>-linux-arm64.tar.gz`, `unt_<버전>_arm64.deb` |
+
+압축 파일에는 `unt` 실행 파일(Windows는 `unt.exe`)과 라이선스, 함께 담긴 Node.js와 라이브러리의 라이선스가 들어 있습니다. 압축을 풀고 실행 파일을 `PATH`에 있는 폴더로 옮기세요. 모든 파일의 체크섬은 `SHA256SUMS`에 있습니다.
+
+실행 파일에 코드 서명을 하지 않았기 때문에 처음 실행할 때 막힐 수 있습니다.
+
+- **Windows**: SmartScreen이 "Windows의 PC 보호" 창을 띄우면 **추가 정보**를 누른 뒤 **실행**을 누르세요. PowerShell에서 `Unblock-File .\unt.exe`로 내려받은 파일 표시를 한 번 지워도 됩니다.
+- **macOS**: 브라우저로 받은 파일은 공증을 받지 않았다는 이유로 Gatekeeper가 열지 않습니다. `xattr -d com.apple.quarantine unt`로 내려받은 파일 표시를 한 번 지우세요. Homebrew로 설치했거나 `curl`로 받은 파일은 해당하지 않습니다.
 
 ## 소스에서 빌드하기
 
-패키지가 올라가기 전까지는 이렇게 설치합니다. Node.js 22.13 이상이 필요합니다.
+Node.js 22.13 이상이 필요합니다.
 
 ```console
 $ git clone https://github.com/JAEJUN090210/Uranus-NetTools.git
@@ -401,7 +439,7 @@ $ npm run build
 $ node dist/unt.cjs --help
 ```
 
-빌드 후 `npm link`를 실행하면 어디서나 `unt` 명령을 쓸 수 있습니다.
+빌드 후 `npm link`를 실행하면 어디서나 `unt` 명령을 쓸 수 있습니다. 지금 쓰는 플랫폼용 단독 실행 파일이 필요하면 `npm run build` 다음에 `npm run build:sea`를 실행하세요. `dist/sea`에 만들어집니다.
 
 ## 책임 있는 사용
 
