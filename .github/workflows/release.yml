@@ -13,6 +13,7 @@ on:
       - scripts/build-deb.ts
       - scripts/build-apt-repo.ts
       - scripts/homebrew-formula.ts
+      - scripts/winget-manifest.ts
       - package.json
       - package-lock.json
   workflow_dispatch:
@@ -36,14 +37,17 @@ jobs:
     outputs:
       apt: ${{ steps.check.outputs.apt }}
       homebrew: ${{ steps.check.outputs.homebrew }}
+      winget: ${{ steps.check.outputs.winget }}
     steps:
       - id: check
         env:
           APT_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
         run: |
           echo "apt=$([ -n "$APT_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
           echo "homebrew=$([ -n "$TAP_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "winget=$([ -n "$WINGET_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   build:
     name: Build (${{ matrix.target }})
@@ -258,3 +262,19 @@ jobs:
           fi
           git commit -m "🚀 :: unt ${GITHUB_REF_NAME#v}"
           git push
+
+  # winget-releaser는 이미 등록된 패키지만 갱신할 수 있습니다.
+  # 첫 버전을 직접 올린 뒤 저장소 변수 WINGET_PUBLISHED를 true로 바꾸면 그다음 버전부터 자동으로 PR을 보냅니다.
+  winget:
+    name: Publish to winget
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') && vars.WINGET_PUBLISHED == 'true' &&
+      needs.secrets.outputs.winget == 'true'
+    needs: [secrets, release]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: vedantmgoyal9/winget-releaser@b7370d4d152efdce803a26cc6ca9eee58cb2ad54
+        with:
+          identifier: JAEJUN090210.UranusNetTools
+          installers-regex: 'windows-x64\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
