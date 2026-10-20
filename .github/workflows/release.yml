@@ -12,6 +12,7 @@ on:
       - scripts/build-sea.ts
       - scripts/build-deb.ts
       - scripts/build-apt-repo.ts
+      - scripts/homebrew-formula.ts
       - package.json
       - package-lock.json
   workflow_dispatch:
@@ -34,11 +35,15 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       apt: ${{ steps.check.outputs.apt }}
+      homebrew: ${{ steps.check.outputs.homebrew }}
     steps:
       - id: check
         env:
           APT_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
-        run: echo "apt=$([ -n "$APT_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          echo "apt=$([ -n "$APT_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "homebrew=$([ -n "$TAP_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
 
   build:
     name: Build (${{ matrix.target }})
@@ -180,3 +185,76 @@ jobs:
     steps:
       - id: deploy
         uses: actions/deploy-pages@v5
+
+  # formula를 Homebrew로 검사하고, 받은 압축 파일로 실제 설치까지 해 봅니다.
+  homebrew-check:
+    name: Check Homebrew formula
+    needs: build
+    runs-on: macos-15
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist/release
+          pattern: unt-*
+          merge-multiple: true
+      - name: Audit the formula
+        run: |
+          npx tsx scripts/homebrew-formula.ts
+          brew tap-new --no-git local/unt
+          cp dist/homebrew/unt.rb "$(brew --repository local/unt)/Formula/unt.rb"
+          brew audit --strict --formula local/unt/unt
+          brew style --formula local/unt/unt
+      - name: Install from the downloaded archives
+        run: |
+          npx tsx scripts/homebrew-formula.ts --base-url "file://$PWD/dist/release"
+          cp dist/homebrew/unt.rb "$(brew --repository local/unt)/Formula/unt.rb"
+          brew install --formula local/unt/unt
+          brew test local/unt/unt
+          test "$(unt --version)" = "$(node -p "require('./package.json').version")"
+
+  homebrew:
+    name: Publish Homebrew formula
+    if: startsWith(github.ref, 'refs/tags/v') && needs.secrets.outputs.homebrew == 'true'
+    needs: [secrets, release, homebrew-check]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist/release
+          pattern: unt-*
+          merge-multiple: true
+      - run: npx tsx scripts/homebrew-formula.ts
+      - uses: actions/checkout@v7
+        with:
+          repository: JAEJUN090210/homebrew-tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: tap
+      - name: Commit the formula
+        run: |
+          mkdir -p tap/Formula
+          cp dist/homebrew/unt.rb tap/Formula/unt.rb
+          cd tap
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/unt.rb
+          if git diff --cached --quiet; then
+            echo "the formula is already up to date"
+            exit 0
+          fi
+          git commit -m "🚀 :: unt ${GITHUB_REF_NAME#v}"
+          git push
