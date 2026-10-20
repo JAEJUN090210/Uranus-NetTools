@@ -9,9 +9,6 @@ English | [한국어](README.ko.md)
 
 Uranus-NetTools (`unt`) is a cross-platform command-line network toolkit. It bundles everyday diagnostic, scanning, and lookup tools behind one consistent interface: run a single command, or drop into an interactive shell. Built with TypeScript on Node.js.
 
-> [!NOTE]
-> Version 1.0.0 is out. Builds for the package managers below are not published yet, so for now install it by [building from source](#building-from-source).
-
 ## Features
 
 | Category | Tools |
@@ -381,17 +378,58 @@ The process number is always shown. `--names` turns it into a program name as we
 
 ## Installation
 
-Uranus-NetTools will be available through the following package managers. None of them is published yet; until then, [build from source](#building-from-source).
+`unt` ships as a single executable with Node.js built in, so nothing else needs to be installed. It runs on Windows 10 or later (x64), macOS 13.5 or later (Apple silicon and Intel), and Linux with glibc 2.28 or later (x64 and arm64).
 
 | Platform | Package manager | Status |
 | --- | --- | --- |
-| Ubuntu | apt | Not published yet |
-| macOS | Homebrew | Not published yet |
-| Windows | winget | Not published yet |
+| Ubuntu, Debian | [apt](#apt-ubuntu-debian) | Available |
+| macOS | [Homebrew](#homebrew-macos) | Available |
+| Windows | winget | Coming soon; use the [direct download](#direct-download) for now |
+
+### apt (Ubuntu, Debian)
+
+Add the repository and its signing key once, then install:
+
+```console
+$ sudo install -d -m 0755 /etc/apt/keyrings
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/apt/uranus-nettools.gpg | sudo tee /etc/apt/keyrings/uranus-nettools.gpg > /dev/null
+$ echo "deb [signed-by=/etc/apt/keyrings/uranus-nettools.gpg] https://jaejun090210.github.io/Uranus-NetTools/apt stable main" | sudo tee /etc/apt/sources.list.d/uranus-nettools.list
+$ sudo apt update
+$ sudo apt install unt
+```
+
+New versions arrive with `sudo apt upgrade`. The packages are built for amd64 and arm64 and install on Ubuntu 20.04, Debian 11, and newer.
+
+### Homebrew (macOS)
+
+```console
+$ brew install jaejun090210/tap/unt
+```
+
+New versions arrive with `brew upgrade`.
+
+### Direct download
+
+Every [release](https://github.com/JAEJUN090210/Uranus-NetTools/releases/latest) has these files:
+
+| Platform | File |
+| --- | --- |
+| Windows x64 | `unt-<version>-windows-x64.zip` |
+| macOS Apple silicon | `unt-<version>-macos-arm64.tar.gz` |
+| macOS Intel | `unt-<version>-macos-x64.tar.gz` |
+| Linux x64 | `unt-<version>-linux-x64.tar.gz`, `unt_<version>_amd64.deb` |
+| Linux arm64 | `unt-<version>-linux-arm64.tar.gz`, `unt_<version>_arm64.deb` |
+
+Each archive holds the `unt` executable (`unt.exe` on Windows), the license, and the licenses of the bundled Node.js and libraries. Extract it and move the executable to a folder on your `PATH`. `SHA256SUMS` lists the checksum of every file.
+
+The executables are not code-signed, so the first run may be blocked:
+
+- **Windows**: if SmartScreen shows "Windows protected your PC", choose **More info**, then **Run anyway**. You can also clear the download mark once in PowerShell with `Unblock-File .\unt.exe`.
+- **macOS**: Gatekeeper refuses to open a file downloaded with a browser because it is not notarized. Clear the download mark once with `xattr -d com.apple.quarantine unt`. Homebrew installs and files downloaded with `curl` are not affected.
 
 ## Building from source
 
-Until the packages are published, this is how to install Uranus-NetTools. Node.js 22.13 or later is required.
+Node.js 22.13 or later is required.
 
 ```console
 $ git clone https://github.com/JAEJUN090210/Uranus-NetTools.git
@@ -401,7 +439,7 @@ $ npm run build
 $ node dist/unt.cjs --help
 ```
 
-Run `npm link` after building to use the `unt` command from anywhere.
+Run `npm link` after building to use the `unt` command from anywhere. For a standalone executable for the platform you are on, run `npm run build:sea` after `npm run build`; it is written to `dist/sea`.
 
 ## Responsible use
 

@@ -1,6 +1,6 @@
 {
   "name": "uranus-nettools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "CLI-based Network Toolkit Powered by Uranus",
   "keywords": [
