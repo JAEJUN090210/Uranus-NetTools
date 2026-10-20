@@ -1,6 +1,6 @@
 {
   "name": "uranus-nettools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "CLI-based Network Toolkit Powered by Uranus",
   "keywords": [
@@ -29,6 +29,8 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "build": "tsx scripts/build.ts",
+    "build:sea": "tsx scripts/build-sea.ts",
+    "build:deb": "tsx scripts/build-deb.ts",
     "typecheck": "tsc",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -52,6 +54,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.13.0",
     "husky": "^9.1.7",
+    "postject": "^1.0.0-alpha.6",
     "prettier": "^3.9.10",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
