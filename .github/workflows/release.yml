@@ -1,0 +1,101 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  # 배포 설정을 바꾸는 PR에서는 게시하지 않고 빌드만 시험합니다.
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - .github/workflows/release.yml
+      - scripts/build.ts
+      - scripts/build-sea.ts
+      - package.json
+      - package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  HUSKY: 0
+  # 실행 파일에 그대로 들어가는 Node 버전입니다. LTS를 씁니다.
+  NODE_VERSION: 24
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: windows-x64, os: windows-2025 }
+          - { target: linux-x64, os: ubuntu-24.04 }
+          - { target: linux-arm64, os: ubuntu-24.04-arm }
+          - { target: macos-arm64, os: macos-15 }
+          - { target: macos-x64, os: macos-15-intel }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # 실행 파일을 만들고, 버전이 맞게 나오는지까지 확인합니다.
+      - run: npm run build:sea
+      - name: Smoke test
+        shell: bash
+        run: |
+          exe=dist/sea/unt
+          if [ -f dist/sea/unt.exe ]; then exe=dist/sea/unt.exe; fi
+          "$exe" --help > /dev/null
+          "$exe" local --json > /dev/null
+          # 닫힌 로컬 포트 하나를 검사하면 소켓과 내장 포트 데이터까지 거치고, 끝까지 돌면 종료 코드 0입니다.
+          "$exe" scan 127.0.0.1 -p 1 -W 500 --json > /dev/null
+      - uses: actions/upload-artifact@v7
+        with:
+          name: unt-${{ matrix.target }}
+          path: dist/release/*
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      # 태그와 package.json 버전이 다르면 잘못 붙인 태그이므로 게시하지 않습니다.
+      - name: Check the version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "v$version" = "$GITHUB_REF_NAME" || {
+            echo "::error::tag $GITHUB_REF_NAME does not match package.json version $version"
+            exit 1
+          }
+      - uses: actions/download-artifact@v8
+        with:
+          path: dist/release
+          pattern: unt-*
+          merge-multiple: true
+      - name: Write checksums
+        working-directory: dist/release
+        run: sha256sum -- * > SHA256SUMS && cat SHA256SUMS
+      # 손으로 만든 Release가 있으면 거기에 붙이고, 없으면 만듭니다.
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes \
+              --title "🚀 :: $GITHUB_REF_NAME"
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/release/* --clobber
