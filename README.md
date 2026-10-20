@@ -380,11 +380,45 @@ The process number is always shown. `--names` turns it into a program name as we
 
 `unt` ships as a single executable with Node.js built in, so nothing else needs to be installed. It runs on Windows 10 or later (x64), macOS 13.5 or later (Apple silicon and Intel), and Linux with glibc 2.28 or later (x64 and arm64).
 
-| Platform | Package manager | Status |
-| --- | --- | --- |
-| Ubuntu, Debian | [apt](#apt-ubuntu-debian) | Available |
-| macOS | [Homebrew](#homebrew-macos) | Available |
-| Windows | winget | Coming soon; use the [direct download](#direct-download) for now |
+| Platform | Ways to install |
+| --- | --- |
+| Linux, macOS | [Install script](#install-script) |
+| Windows | [Install script](#install-script), winget (coming soon) |
+| Ubuntu, Debian | [apt](#apt-ubuntu-debian) |
+| macOS | [Homebrew](#homebrew-macos) |
+| Any | [Direct download](#direct-download) |
+
+### Install script
+
+On Linux and macOS:
+
+```console
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/install.sh | sh
+```
+
+On Windows, in PowerShell:
+
+```console
+> irm https://jaejun090210.github.io/Uranus-NetTools/install.ps1 | iex
+```
+
+The script picks the build for your operating system and CPU from the latest release, checks it against `SHA256SUMS`, and installs it without administrator rights:
+
+- **Linux and macOS**: `~/.local/bin/unt` (`/usr/local/bin/unt` when run as root). If the folder is not on your `PATH`, one line is added to your shell's startup file (`~/.zshrc`, `~/.bashrc`, `~/.bash_profile` on macOS, fish's `conf.d`, or `~/.profile`), so open a new terminal afterwards.
+- **Windows**: `%LOCALAPPDATA%\Programs\unt\unt.exe`, added to your user `PATH`. It works right away in the same window.
+
+Run the script again to update, and delete the executable to uninstall. These environment variables change what it does:
+
+| Variable | Effect |
+| --- | --- |
+| `UNT_VERSION` | Install this version instead of the latest, such as `1.0.1` |
+| `UNT_INSTALL_DIR` | Install into this folder |
+| `UNT_NO_MODIFY_PATH` | Set to `1` to leave `PATH` and startup files alone |
+
+```console
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/install.sh | UNT_VERSION=1.0.1 sh
+> $env:UNT_VERSION = '1.0.1'; irm https://jaejun090210.github.io/Uranus-NetTools/install.ps1 | iex
+```
 
 ### apt (Ubuntu, Debian)
 
@@ -424,8 +458,8 @@ Each archive holds the `unt` executable (`unt.exe` on Windows), the license, and
 
 The executables are not code-signed, so the first run may be blocked:
 
-- **Windows**: if SmartScreen shows "Windows protected your PC", choose **More info**, then **Run anyway**. You can also clear the download mark once in PowerShell with `Unblock-File .\unt.exe`.
-- **macOS**: Gatekeeper refuses to open a file downloaded with a browser because it is not notarized. Clear the download mark once with `xattr -d com.apple.quarantine unt`. Homebrew installs and files downloaded with `curl` are not affected.
+- **Windows**: if SmartScreen shows "Windows protected your PC", choose **More info**, then **Run anyway**. You can also clear the download mark once in PowerShell with `Unblock-File .\unt.exe`. The install script is not affected.
+- **macOS**: Gatekeeper refuses to open a file downloaded with a browser because it is not notarized. Clear the download mark once with `xattr -d com.apple.quarantine unt`. Homebrew, the install script, and files downloaded with `curl` are not affected.
 
 ## Building from source
 

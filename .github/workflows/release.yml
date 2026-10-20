@@ -12,6 +12,10 @@ on:
       - scripts/build-sea.ts
       - scripts/build-deb.ts
       - scripts/build-apt-repo.ts
+      - scripts/build-site.ts
+      - scripts/lib/pages.ts
+      - scripts/install.sh
+      - scripts/install.ps1
       - scripts/homebrew-formula.ts
       - scripts/winget-manifest.ts
       - package.json
@@ -80,6 +84,86 @@ jobs:
           "$exe" local --json > /dev/null
           # 닫힌 로컬 포트 하나를 검사하면 소켓과 내장 포트 데이터까지 거치고, 끝까지 돌면 종료 코드 0입니다.
           "$exe" scan 127.0.0.1 -p 1 -W 500 --json > /dev/null
+      - name: Lint install.sh
+        if: matrix.target == 'linux-x64'
+        run: shellcheck scripts/install.sh
+      # 설치 스크립트로 이번에 만든 파일을 설치해 봅니다. GitHub 대신 로컬 폴더에서 받고, HOME을 빈 폴더로
+      # 바꿔서 셸 설정 파일에 PATH를 넣는 동작과, 다시 실행했을 때 같은 줄을 또 넣지 않는지까지 확인합니다.
+      - name: Test install.sh
+        if: runner.os != 'Windows'
+        run: |
+          downloads="$RUNNER_TEMP/downloads"
+          mkdir -p "$downloads" "$RUNNER_TEMP/home"
+          cp dist/release/unt-*.tar.gz "$downloads/"
+          cd "$downloads"
+          if command -v sha256sum > /dev/null; then sha256sum unt-*; else shasum -a 256 unt-*; fi > SHA256SUMS
+          cd "$GITHUB_WORKSPACE"
+          export HOME="$RUNNER_TEMP/home" SHELL=/bin/bash UNT_DOWNLOAD_URL="file://$downloads"
+          sh scripts/install.sh
+          # curl | sh처럼 표준 입력으로 읽어도 동작해야 합니다. 이번은 같은 버전 재설치입니다.
+          sh < scripts/install.sh
+          test "$("$HOME/.local/bin/unt" --version)" = "$(node -p "require('./package.json').version")"
+          profile="$HOME/.bashrc"
+          if [ "$RUNNER_OS" = macOS ]; then profile="$HOME/.bash_profile"; fi
+          cat "$profile"
+          test "$(grep -Fxc 'export PATH="$HOME/.local/bin:$PATH"' "$profile")" = 1
+      - name: Lint install.ps1
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          if (-not (Get-Module -ListAvailable PSScriptAnalyzer)) {
+            Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+          }
+          # 설치 과정을 보여 주는 출력이라 Write-Host를 씁니다.
+          $issues = Invoke-ScriptAnalyzer -Path scripts/install.ps1 -Severity Warning, Error -ExcludeRule PSAvoidUsingWriteHost
+          $issues | Format-Table -AutoSize -Wrap
+          if ($issues) { throw "PSScriptAnalyzer reported $(@($issues).Count) issue(s)" }
+      # 사용자 PC에 기본으로 있는 Windows PowerShell 5.1로, irm | iex와 같은 방식으로 두 번 실행합니다.
+      - name: Test install.ps1
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $downloads = Join-Path $env:RUNNER_TEMP 'downloads'
+          New-Item -ItemType Directory -Force $downloads | Out-Null
+          Copy-Item dist/release/unt-*.zip $downloads
+          $zip = Get-Item (Join-Path $downloads 'unt-*.zip')
+          $hash = (Get-FileHash $zip.FullName -Algorithm SHA256).Hash.ToLower()
+          Set-Content -Path (Join-Path $downloads 'SHA256SUMS') -Value "$hash  $($zip.Name)" -Encoding Ascii
+          $env:UNT_DOWNLOAD_URL = ([Uri]$downloads).AbsoluteUri
+          $env:UNT_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'unt'
+          Get-Content -Raw scripts/install.ps1 | Invoke-Expression
+          Get-Content -Raw scripts/install.ps1 | Invoke-Expression
+          $expected = node -p "require('./package.json').version"
+          $actual = & (Join-Path $env:UNT_INSTALL_DIR 'unt.exe') --version
+          if ($actual -ne $expected) { throw "installed $actual, expected $expected" }
+          $userPath = [Environment]::GetEnvironmentVariable('Path', 'User') -split ';'
+          if (@($userPath | Where-Object { $_ -eq $env:UNT_INSTALL_DIR }).Count -ne 1) {
+            throw "the user PATH should hold the install folder once: $userPath"
+          }
+      # 실제 최신 Release에서 받는 기본 경로도 시험합니다. 네트워크 문제로 게시가 막히지 않게 PR에서만 돌립니다.
+      - name: Install the latest release with install.sh
+        if: github.event_name == 'pull_request' && runner.os != 'Windows'
+        run: |
+          export HOME="$RUNNER_TEMP/home-latest" UNT_NO_MODIFY_PATH=1
+          mkdir -p "$HOME"
+          sh scripts/install.sh
+          "$HOME/.local/bin/unt" --version
+      - name: Install the latest release with install.ps1 (Windows PowerShell)
+        if: github.event_name == 'pull_request' && runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $env:UNT_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'unt-latest-5'
+          $env:UNT_NO_MODIFY_PATH = '1'
+          Get-Content -Raw scripts/install.ps1 | Invoke-Expression
+          & (Join-Path $env:UNT_INSTALL_DIR 'unt.exe') --version
+      - name: Install the latest release with install.ps1 (PowerShell 7)
+        if: github.event_name == 'pull_request' && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $env:UNT_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'unt-latest-7'
+          $env:UNT_NO_MODIFY_PATH = '1'
+          Get-Content -Raw scripts/install.ps1 | Invoke-Expression
+          & (Join-Path $env:UNT_INSTALL_DIR 'unt.exe') --version
       - name: Build the .deb package
         if: startsWith(matrix.target, 'linux-')
         run: |
@@ -128,9 +212,10 @@ jobs:
           fi
           gh release upload "$GITHUB_REF_NAME" dist/release/* --clobber
 
-  # 저장소를 만들고 실제로 apt로 설치해 봅니다. 태그가 아니거나 서명 키가 없으면 임시 키로 시험만 합니다.
-  apt:
-    name: Build apt repository
+  # GitHub Pages 사이트(안내 페이지, 설치 스크립트, apt 저장소)를 만들고 실제로 apt로 설치해 봅니다.
+  # 태그가 아니거나 서명 키가 없으면 임시 키로 시험만 합니다.
+  site:
+    name: Build Pages site
     needs: [secrets, build]
     runs-on: ubuntu-24.04
     steps:
@@ -155,10 +240,14 @@ jobs:
         run: |
           gpg --batch --passphrase '' --quick-gen-key \
             'Uranus-NetTools test <test@example.invalid>' rsa3072 sign never
-      - name: Build the repository
+      - name: Build the apt repository
         env:
           APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
         run: npx tsx scripts/build-apt-repo.ts
+      - name: Build the landing page and install scripts
+        run: |
+          npx tsx scripts/build-site.ts
+          ls -l dist/site
       - name: Install from the repository
         run: |
           sudo install -d -m 0755 /etc/apt/keyrings
@@ -176,16 +265,16 @@ jobs:
           path: dist/site
 
   pages:
-    name: Publish apt repository
+    name: Publish Pages site
     if: startsWith(github.ref, 'refs/tags/v') && needs.secrets.outputs.apt == 'true'
-    needs: [secrets, apt, release]
+    needs: [secrets, site, release]
     runs-on: ubuntu-24.04
     permissions:
       pages: write
       id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}apt/
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
         uses: actions/deploy-pages@v5

@@ -12,8 +12,8 @@ const ROOT = resolve(import.meta.dirname, '..');
 const RELEASE = join(ROOT, 'dist', 'release');
 const IDENTIFIER = 'JAEJUN090210.UranusNetTools';
 const HOMEPAGE = 'https://github.com/JAEJUN090210/Uranus-NetTools';
-/** winget-releaser가 쓰는 komac과 같은 판을 써서, 이후 자동 갱신과 형식을 맞춥니다. */
-const MANIFEST_VERSION = '1.10.0';
+/** winget-pkgs PR 양식이 확인하는 판입니다. 이후 버전은 winget-releaser(komac)가 자기 판으로 다시 씁니다. */
+const MANIFEST_VERSION = '1.12.0';
 
 const archive = `unt-${pkg.version}-windows-x64.zip`;
 const archivePath = join(RELEASE, archive);

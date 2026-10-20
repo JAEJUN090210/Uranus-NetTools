@@ -115,7 +115,7 @@ hotfix/31_scan-timeout
 4. 태그가 올라가면 [Release 워크플로](.github/workflows/release.yml)가 나머지를 처리합니다.
    - Windows x64, Linux x64·arm64, macOS arm64·x64용 실행 파일과 `.deb`를 빌드하고 실제로 실행해 봅니다.
    - GitHub Release `🚀 :: vX.Y.Z`를 만들고 파일과 `SHA256SUMS`를 올립니다.
-   - apt 저장소를 서명해 GitHub Pages에 올립니다.
+   - 안내 페이지와 설치 스크립트(`install.sh`, `install.ps1`), 서명한 apt 저장소를 GitHub Pages에 올립니다.
    - Homebrew tap(`JAEJUN090210/homebrew-tap`)의 formula를 새 버전으로 바꿉니다.
    - winget-pkgs에 새 버전 PR을 보냅니다.
 5. 자동으로 만들어진 Release 본문을 변경 내용에 맞게 다듬습니다.

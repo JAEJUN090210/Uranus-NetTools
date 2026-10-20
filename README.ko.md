@@ -380,11 +380,45 @@ $ unt conns --udp
 
 `unt`는 Node.js를 함께 담은 실행 파일 하나라서 따로 설치할 것이 없습니다. Windows 10 이상(x64), macOS 13.5 이상(Apple 실리콘, Intel), glibc 2.28 이상인 Linux(x64, arm64)에서 동작합니다.
 
-| 플랫폼 | 패키지 매니저 | 상태 |
-| --- | --- | --- |
-| Ubuntu, Debian | [apt](#apt-ubuntu-debian) | 사용 가능 |
-| macOS | [Homebrew](#homebrew-macos) | 사용 가능 |
-| Windows | winget | 준비 중. 당장은 [직접 내려받기](#직접-내려받기)를 쓰세요 |
+| 플랫폼 | 설치 방법 |
+| --- | --- |
+| Linux, macOS | [설치 스크립트](#설치-스크립트) |
+| Windows | [설치 스크립트](#설치-스크립트), winget(준비 중) |
+| Ubuntu, Debian | [apt](#apt-ubuntu-debian) |
+| macOS | [Homebrew](#homebrew-macos) |
+| 모든 플랫폼 | [직접 내려받기](#직접-내려받기) |
+
+### 설치 스크립트
+
+Linux와 macOS:
+
+```console
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/install.sh | sh
+```
+
+Windows(PowerShell):
+
+```console
+> irm https://jaejun090210.github.io/Uranus-NetTools/install.ps1 | iex
+```
+
+스크립트는 최신 릴리스에서 운영체제와 CPU에 맞는 파일을 골라 `SHA256SUMS`로 검사한 뒤, 관리자 권한 없이 설치합니다.
+
+- **Linux, macOS**: `~/.local/bin/unt`에 설치합니다(root로 실행하면 `/usr/local/bin/unt`). 이 폴더가 `PATH`에 없으면 쓰고 있는 셸의 설정 파일(`~/.zshrc`, `~/.bashrc`, macOS의 `~/.bash_profile`, fish의 `conf.d`, 그 밖에는 `~/.profile`)에 한 줄을 넣으므로, 설치 후 새 터미널을 여세요.
+- **Windows**: `%LOCALAPPDATA%\Programs\unt\unt.exe`에 설치하고 사용자 `PATH`에 추가합니다. 설치한 창에서 바로 쓸 수 있습니다.
+
+다시 실행하면 업데이트되고, 실행 파일을 지우면 삭제됩니다. 아래 환경 변수로 동작을 바꿀 수 있습니다.
+
+| 변수 | 효과 |
+| --- | --- |
+| `UNT_VERSION` | 최신 버전 대신 이 버전을 설치. 예: `1.0.1` |
+| `UNT_INSTALL_DIR` | 이 폴더에 설치 |
+| `UNT_NO_MODIFY_PATH` | `1`이면 `PATH`와 셸 설정 파일을 건드리지 않음 |
+
+```console
+$ curl -fsSL https://jaejun090210.github.io/Uranus-NetTools/install.sh | UNT_VERSION=1.0.1 sh
+> $env:UNT_VERSION = '1.0.1'; irm https://jaejun090210.github.io/Uranus-NetTools/install.ps1 | iex
+```
 
 ### apt (Ubuntu, Debian)
 
@@ -424,8 +458,8 @@ $ brew install jaejun090210/tap/unt
 
 실행 파일에 코드 서명을 하지 않았기 때문에 처음 실행할 때 막힐 수 있습니다.
 
-- **Windows**: SmartScreen이 "Windows의 PC 보호" 창을 띄우면 **추가 정보**를 누른 뒤 **실행**을 누르세요. PowerShell에서 `Unblock-File .\unt.exe`로 내려받은 파일 표시를 한 번 지워도 됩니다.
-- **macOS**: 브라우저로 받은 파일은 공증을 받지 않았다는 이유로 Gatekeeper가 열지 않습니다. `xattr -d com.apple.quarantine unt`로 내려받은 파일 표시를 한 번 지우세요. Homebrew로 설치했거나 `curl`로 받은 파일은 해당하지 않습니다.
+- **Windows**: SmartScreen이 "Windows의 PC 보호" 창을 띄우면 **추가 정보**를 누른 뒤 **실행**을 누르세요. PowerShell에서 `Unblock-File .\unt.exe`로 내려받은 파일 표시를 한 번 지워도 됩니다. 설치 스크립트로 설치했다면 해당하지 않습니다.
+- **macOS**: 브라우저로 받은 파일은 공증을 받지 않았다는 이유로 Gatekeeper가 열지 않습니다. `xattr -d com.apple.quarantine unt`로 내려받은 파일 표시를 한 번 지우세요. Homebrew나 설치 스크립트로 설치했거나 `curl`로 받은 파일은 해당하지 않습니다.
 
 ## 소스에서 빌드하기
 
